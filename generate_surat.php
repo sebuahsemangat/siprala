@@ -168,7 +168,7 @@ $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
 // 7. Output PDF
-$filename = "Surat_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $data_perusahaan['kota_tujuan']) . ".pdf";
+$filename = "Surat_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
 $dompdf->stream($filename, ["Attachment" => 1]);
 
 exit(0);

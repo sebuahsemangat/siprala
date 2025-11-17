@@ -59,7 +59,7 @@ $koneksi->close();
                             <td>
                                 <div class="btn-action-group">
                                     <button class="btn btn-sm btn-warning edit-btn" data-id="<?php echo $surat['id_surat']; ?>" title="Edit">
-                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                        Input Balasan
                                     </button>
 
                                 </div>
@@ -118,10 +118,12 @@ $koneksi->close();
         });
 
 
-        // Event handler untuk tombol Edit
+        // Ganti event handler tombol Edit
+        // Ganti event handler tombol Edit di data_surat.php
         $('#siswaTable tbody').on('click', '.edit-btn', function() {
             var id = $(this).data('id');
-            alert('Aksi Edit Surat ID: ' + id + ' (Akan diarahkan ke halaman edit).');
+            // Arahkan ke kelola siswa terlebih dahulu
+            loadContent('proses_balasan_surat.php?id=' + id);
         });
 
         // Event handler untuk tombol Hapus
