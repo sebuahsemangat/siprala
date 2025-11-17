@@ -1,0 +1,263 @@
+/* style.css */
+
+/* --- Layout Dasar (Dari index.php) --- */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Memastikan body minimal setinggi viewport */
+}
+#wrapper {
+    display: flex;
+    flex-grow: 1;
+}
+#sidebar-wrapper {
+    min-height: 100vh;
+    margin-left: -15rem; /* Sembunyikan secara default */
+    transition: margin .25s ease-out;
+    background-color: #343a40; /* Dark background */
+    position: fixed;
+    z-index: 1030; /* Di atas konten tapi di bawah navbar (jika fixed) */
+}
+#sidebar-wrapper .sidebar-heading {
+    padding: 0.875rem 1.25rem;
+    font-size: 1.2rem;
+    color: white;
+    background-color: #007bff; /* Primary color header */
+}
+#sidebar-wrapper .list-group {
+    width: 15rem;
+}
+.list-group-item {
+    color: #adb5bd;
+    background-color: #343a40;
+    border: none;
+}
+.list-group-item:hover {
+    color: #fff;
+    background-color: #495057;
+}
+#page-content-wrapper {
+    min-width: 100vw;
+}
+.toggled #sidebar-wrapper {
+    margin-left: 0; /* Tampilkan sidebar ketika toggled */
+}
+.toggled #page-content-wrapper {
+    margin-left: 15rem; /* Dorong konten ketika sidebar tampil */
+    min-width: calc(100vw - 15rem);
+}
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0; /* Tampilkan default di desktop */
+    }
+    #page-content-wrapper {
+        min-width: 0;
+        width: 100%;
+        margin-left: 15rem; /* Geser konten default di desktop */
+    }
+    .toggled #sidebar-wrapper {
+        margin-left: -15rem; /* Sembunyikan ketika toggled */
+    }
+    .toggled #page-content-wrapper {
+        margin-left: 0; /* Kembalikan ke penuh ketika toggled */
+    }
+}
+.main-container { 
+    padding: 20px; 
+}
+
+
+/* --- CSS Form buat_surat (Dibersihkan dari elemen Body/HTML Wrapper) --- */
+.container-form {
+    padding: 20px;
+}
+.student-list-container {
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+.student-row-group {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+.student-row-group label {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.student-row-group input {
+    font-size: 0.95rem;
+}
+
+/* Fix untuk Modal Student List */
+#studentSearchModal .modal-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.search-results a:focus, .search-results a:active {
+    background-color: #e9ecef;
+}
+.search-results a.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+//Footer
+/* Styling Footer */
+.footer {
+    background-color: #343a40 !important; /* Menggunakan warna gelap Bootstrap */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.footer .text-white-50 {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+//DataTable
+
+    
+    /* DataTable Custom Styling */
+    .dataTables_wrapper {
+        padding: 0;
+    }
+    
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1.5rem;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        padding: 0.5rem 1rem;
+        margin-left: 0.5rem;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+    
+    /* Table Styling */
+    #siswaTable {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    #siswaTable thead th {
+        background: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #dee2e6;
+        padding: 1rem 0.75rem;
+    }
+    
+    #siswaTable tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    #siswaTable tbody tr:hover {
+        background-color: #f8f9ff;
+        transform: scale(1.01);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    }
+    
+    #siswaTable tbody td {
+        padding: 0.875rem 0.75rem;
+        vertical-align: middle;
+        color: #495057;
+    }
+    
+    /* Button Styling */
+    .btn-action-group {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border: none;
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border: none;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    
+    /* DataTables Buttons Styling */
+    .dt-buttons {
+        margin-bottom: 1rem;
+    }
+    
+    .dt-button {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: white !important;
+        border: none !important;
+        padding: 0.6rem 1.2rem !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2) !important;
+    }
+    
+    .dt-button:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+    }
+    
+    /* Pagination Styling */
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 6px;
+        margin: 0 2px;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        color: white !important;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: #f8f9fa !important;
+        border: 1px solid #dee2e6 !important;
+        color: #495057 !important;
+    }
+    
+    /* Info Text Styling */
+    .dataTables_info {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
