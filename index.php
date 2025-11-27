@@ -39,7 +39,7 @@
                 <a href="#" class="list-group-item list-group-item-action py-3" data-content="data_siswa.php">
                     <i class="fas fa-user-graduate fa-fw me-2"></i> Data Siswa
                 </a>
-                <a href="#" class="list-group-item list-group-item-action py-3">
+                <a href="#" class="list-group-item list-group-item-action py-3" data-content="data_tempat_pkl.php">
                     <i class="fas fa-building fa-fw me-2"></i> Data Tempat PKL
                 </a>
                 <a href="#" class="list-group-item list-group-item-action py-3" data-content="settings.php">

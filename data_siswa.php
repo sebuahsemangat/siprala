@@ -56,11 +56,11 @@ $koneksi->close();
                 <thead>
                     <tr>
                         <th style="width: 50px;">No.</th>
-                        <th style="width: 150px;">NIS</th>
+                        <th style="width: 80px;">NIS</th>
                         <th>Nama Siswa</th>
                         <th style="width: 100px;">Kelas</th>
                         <th style="width: 150px;">Kontak Siswa</th>
-                        <th style="width: 250px;">Status Penempatan PKL</th> <th style="width: 150px;" class="text-center">Aksi</th>
+                        <th style="width: 80px;">Penempatan PKL</th> <th style="width: 150px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
