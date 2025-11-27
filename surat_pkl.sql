@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Nov 24, 2025 at 01:59 AM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.0.28
+-- Host: localhost:3306
+-- Generation Time: Nov 27, 2025 at 07:40 AM
+-- Server version: 8.4.3
+-- PHP Version: 8.3.16
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -28,12 +28,12 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `pembimbing` (
-  `id_pembimbing` int(11) NOT NULL,
-  `username` varchar(20) NOT NULL,
-  `nama_pembimbing` varchar(70) NOT NULL,
-  `kontak_pembimbing` varchar(15) NOT NULL,
-  `password` varchar(100) NOT NULL,
-  `password_status` int(11) NOT NULL DEFAULT 0
+  `id_pembimbing` int NOT NULL,
+  `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_pembimbing` varchar(70) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kontak_pembimbing` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_status` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -79,12 +79,12 @@ INSERT INTO `pembimbing` (`id_pembimbing`, `username`, `nama_pembimbing`, `konta
 --
 
 CREATE TABLE `settings` (
-  `id_settings` int(11) NOT NULL,
-  `format_nomor_surat` varchar(50) NOT NULL,
-  `nama_sekolah` varchar(100) NOT NULL,
-  `tgl_mulai` varchar(50) NOT NULL,
-  `tgl_selesai` varchar(50) NOT NULL,
-  `nama_kepsek` varchar(100) NOT NULL
+  `id_settings` int NOT NULL,
+  `format_nomor_surat` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `nama_sekolah` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `tgl_mulai` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `tgl_selesai` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `nama_kepsek` varchar(100) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -101,15 +101,15 @@ INSERT INTO `settings` (`id_settings`, `format_nomor_surat`, `nama_sekolah`, `tg
 --
 
 CREATE TABLE `siswa` (
-  `id_siswa` int(11) NOT NULL,
-  `nis` varchar(15) NOT NULL,
-  `nama_siswa` varchar(75) NOT NULL,
-  `kelas` varchar(10) NOT NULL,
-  `kontak_siswa` varchar(15) NOT NULL,
-  `id_pembimbing` int(11) NOT NULL,
-  `id_tempat` int(11) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `password_status` int(11) NOT NULL DEFAULT 0
+  `id_siswa` int NOT NULL,
+  `nis` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_siswa` varchar(75) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kelas` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kontak_siswa` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_pembimbing` int NOT NULL,
+  `id_tempat` int NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_status` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -117,9 +117,9 @@ CREATE TABLE `siswa` (
 --
 
 INSERT INTO `siswa` (`id_siswa`, `nis`, `nama_siswa`, `kelas`, `kontak_siswa`, `id_pembimbing`, `id_tempat`, `password`, `password_status`) VALUES
-(1, '23241307', 'Nayla Atansa Z', 'XII-RPL 1', '081316629105', 0, 0, '$2y$10$3N/RDaERv75TKiZ32lmlzevMpU3fWdEBgMfamNqK11HIO4fyk5J86', 0),
-(2, '23241023', 'Nazila Nur Haida', 'XII-RPL 1', '085318951133', 0, 0, '$2y$10$mPYkRXA2OGJ.wrSvFCRqse4v/D9B0xVkL9y6vp62lngNAHGc7N54.', 0),
-(3, '23241031', 'Salsabila Chosyah', 'XII-RPL 1', '082263031014', 0, 0, '$2y$10$osTj09h/IdbGRM0.v2m5bewJceIyxQ8qo9N7HoHgJGPeOuSdSBQSu', 0),
+(1, '23241307', 'Nayla Atansa Z', 'XII-RPL 1', '081316629105', 1, 87, '$2y$10$3N/RDaERv75TKiZ32lmlzevMpU3fWdEBgMfamNqK11HIO4fyk5J86', 0),
+(2, '23241023', 'Nazila Nur Haida', 'XII-RPL 1', '085318951133', 1, 87, '$2y$10$mPYkRXA2OGJ.wrSvFCRqse4v/D9B0xVkL9y6vp62lngNAHGc7N54.', 0),
+(3, '23241031', 'Salsabila Chosyah', 'XII-RPL 1', '082263031014', 1, 87, '$2y$10$osTj09h/IdbGRM0.v2m5bewJceIyxQ8qo9N7HoHgJGPeOuSdSBQSu', 0),
 (4, '23241159', 'Kaka Sujana', 'XII-RPL 5', '087711658309', 0, 0, '$2y$10$grG.NXF1Ot0geHB4vU/jg.FtUDnnGxlAbUB64tvMZBurLKnVmwbEi', 0),
 (5, '23241261', 'Firasty Shafira I', 'XII-RPL 1', '081770057316', 0, 0, '$2y$10$X4OeP/TU5CQDbQYPuODNG.lfFFFfCcELTgj8LBhh16FWkguIPhC.i', 0),
 (6, '23241044', 'Denis Ameraldi', 'XII-RPL 3', '081573399691', 0, 0, '$2y$10$je1fIGnrPlxjWztowQr4/uQZgzT.kgzIc/8Dm0c94tQFjJiu25Rra', 0),
@@ -325,10 +325,10 @@ INSERT INTO `siswa` (`id_siswa`, `nis`, `nama_siswa`, `kelas`, `kontak_siswa`, `
 (206, '23241084', 'Fajar Fadilah', 'XII-RPL 1', '081952687279', 0, 0, '$2y$10$oYU2PqFKZyONeqp311WOcun61Y1djcFT5cswMR1S185Lan/BCaoua', 0),
 (207, '23241239', 'Rafli Nurvizal', 'XII-RPL 1', '085720752505', 0, 0, '$2y$10$mGhUo.DBQjFYzS.sRgwEpeQPTMm1qvp5m5fl5hrtpZjDcM.6o8Hbm', 0),
 (208, '23241165', 'Muhammad Reyno Permana', 'XII-RPL 1', '082119807458', 0, 0, '$2y$10$B1CQ4krCIq4sNFptcGgmAu5mtC54lonXkHboulpjfZDSPB.A9smZe', 0),
-(209, '23241280', 'Sherina Cinta Derisa', 'XII-RPL9', '081901268756', 0, 3, '$2y$10$DBGNR/x1lcmx90.pgTPDzuQ4/O98KN0/o9Dx.IxzRGIJMBToyvNa6', 0),
+(209, '23241280', 'Sherina Cinta Derisa', 'XII-RPL9', '081901268756', 0, 0, '$2y$10$DBGNR/x1lcmx90.pgTPDzuQ4/O98KN0/o9Dx.IxzRGIJMBToyvNa6', 0),
 (210, '23241104', 'Siti Zaqiah', 'XII-RPL9', '083138776696', 0, 0, '$2y$10$AcWsS50DdjEe5pOSaQEMmejRxLIFNHTsO2WFogJ0t8P/2Mh2MsTtC', 0),
 (211, '23241416', 'Rahadian Arsy', 'XII-DKV 2', '081214659208', 0, 0, '$2y$10$gWkFTNnWWhWTSgshIhxnHOUkyyKQs69nWjIXAz.45FS9exvLGn56G', 0),
-(212, '24252001', 'Eka Prasetya', 'XII-DKV 1', '081297612535', 0, 3, '$2y$10$TRLroP4Db63ATqaOhutX8e4epTfqWtb999Zfs8IfdpjvKd5ZrjOHa', 0),
+(212, '24252001', 'Eka Prasetya', 'XII-DKV 1', '081297612535', 0, 0, '$2y$10$TRLroP4Db63ATqaOhutX8e4epTfqWtb999Zfs8IfdpjvKd5ZrjOHa', 0),
 (213, '23241363', 'Arina Alfatihah', 'XII-DKV 3', '082130715009', 0, 0, '$2y$10$/yRBHVlZ5pv0s.ppAuzMG.O7XKktHY2TugYE1kcb.ieQFfHQnXT6C', 0),
 (214, '23241372', 'Iklima Dwi Rohmah', 'XII-DKV 3', '082119949002', 0, 0, '$2y$10$8bga78UCB7kNhUAjR6FRnegHm27PRTkJJu3jTuxC4R.ARYk1JrWSu', 0),
 (215, '23241366', 'Dealova Dwi Agustin', 'XII-DKV 3', '085156380088', 0, 0, '$2y$10$iK20pWsTMrzuCH/0a3Iose3yFLdPixmf8jGqPTESuzhB4z3vJpMX6', 0),
@@ -527,11 +527,11 @@ INSERT INTO `siswa` (`id_siswa`, `nis`, `nama_siswa`, `kelas`, `kontak_siswa`, `
 --
 
 CREATE TABLE `siswa_surat` (
-  `id_surat_siswa` int(11) NOT NULL,
-  `id_siswa` int(11) NOT NULL,
-  `id_surat` int(11) NOT NULL,
-  `status` enum('pending','diterima','ditolak','') NOT NULL DEFAULT 'pending',
-  `catatan` text NOT NULL
+  `id_surat_siswa` int NOT NULL,
+  `id_siswa` int NOT NULL,
+  `id_surat` int NOT NULL,
+  `status` enum('pending','diterima','ditolak','') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `catatan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -539,10 +539,9 @@ CREATE TABLE `siswa_surat` (
 --
 
 INSERT INTO `siswa_surat` (`id_surat_siswa`, `id_siswa`, `id_surat`, `status`, `catatan`) VALUES
-(22, 212, 11, 'diterima', ''),
-(23, 209, 11, 'diterima', ''),
-(24, 144, 12, 'pending', ''),
-(25, 10, 12, 'pending', '');
+(49, 1, 30, 'diterima', ''),
+(50, 2, 30, 'diterima', ''),
+(51, 3, 30, 'diterima', '');
 
 -- --------------------------------------------------------
 
@@ -551,11 +550,11 @@ INSERT INTO `siswa_surat` (`id_surat_siswa`, `id_siswa`, `id_surat`, `status`, `
 --
 
 CREATE TABLE `surat` (
-  `id_surat` int(11) NOT NULL,
-  `no_surat` varchar(50) NOT NULL,
-  `id_tempat_pkl` int(11) NOT NULL,
-  `tanggal` varchar(20) NOT NULL,
-  `status_balasan` enum('Sudah Dibalas','Belum Dibalas','','') NOT NULL DEFAULT 'Belum Dibalas'
+  `id_surat` int NOT NULL,
+  `no_surat` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `id_tempat_pkl` int NOT NULL,
+  `tanggal` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `status_balasan` enum('Sudah Dibalas','Belum Dibalas','','') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Belum Dibalas'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -563,8 +562,7 @@ CREATE TABLE `surat` (
 --
 
 INSERT INTO `surat` (`id_surat`, `no_surat`, `id_tempat_pkl`, `tanggal`, `status_balasan`) VALUES
-(11, '001/PAN-PKL/SMK-IF/YPS/XI/2025', 3, '2025-11-17', 'Sudah Dibalas'),
-(12, '002/PAN-PKL/SMK-IF/YPS/XI/2025', 3, '2025-11-17', 'Belum Dibalas');
+(30, '001/PAN-PKL/SMK-IF/YPS/XI/2025', 87, '2025-11-27', 'Sudah Dibalas');
 
 -- --------------------------------------------------------
 
@@ -573,9 +571,9 @@ INSERT INTO `surat` (`id_surat`, `no_surat`, `id_tempat_pkl`, `tanggal`, `status
 --
 
 CREATE TABLE `tempat_pkl` (
-  `id_tempat` int(11) NOT NULL,
-  `nama_tempat` varchar(150) NOT NULL,
-  `id_pembimbing` int(11) NOT NULL
+  `id_tempat` int NOT NULL,
+  `nama_tempat` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_pembimbing` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -583,97 +581,99 @@ CREATE TABLE `tempat_pkl` (
 --
 
 INSERT INTO `tempat_pkl` (`id_tempat`, `nama_tempat`, `id_pembimbing`) VALUES
-(1, 'Sekretariat Daerah Sumedang', 1),
-(2, 'Jonas Photo  (Bandung)', 2),
-(3, 'B One Corporation', 2),
-(4, 'Percetakan Sofasco', 2),
-(5, 'Polres Sumedang', 2),
-(6, 'Dinas Pekerjaan Umum', 3),
-(7, 'BAPPPEDA', 3),
-(8, 'PT. Milari Risalah Wisata', 3),
-(9, 'Busy Production', 4),
-(10, 'Freya Clinic', 4),
-(11, 'Sumedang Laptop', 4),
-(12, 'PT. Tritunggal Swarna Factory', 4),
-(13, 'PT. Chlorine Digital Media', 5),
-(14, 'Ismail Copy Center', 5),
-(15, 'PT MULTI BOX INDAH', 5),
-(16, 'PT Newtype Tekno Pioneer', 5),
-(17, 'Dinas Sosial Sumedang', 5),
-(18, 'Dinas Arsip dan Perpustakaan Umum Daerah Sumedang', 6),
-(19, 'PT Elion Hanaya Abyudaya', 6),
-(20, 'FTI UNSAP', 6),
-(21, 'Badan Kesatuan Bangsa dan Politik', 7),
-(22, 'MPP Sumedang', 7),
-(23, 'Cemara Agung', 7),
-(24, 'Dinas Perumahan Kawasan Permukiman', 8),
-(25, 'Percetakan Nadhif', 8),
-(26, 'JNT Cargo', 8),
-(27, 'PLN (Persero)', 9),
-(28, 'PT. TIKI Jalur Nugraha Ekakurir (JNE)', 9),
-(29, 'Pengadilan Agama Sumedang', 9),
-(30, 'Studio Genic', 10),
-(31, 'Dinas Koperasi Usaha Kecil Menengah Perdagangan dan Perindustrian ', 10),
-(32, 'Pegadaian Sumedang', 10),
-(33, 'Kantor Kecamatan Cimalaka', 10),
-(34, 'Dikhan Print', 11),
-(35, 'RSUD UMAR WIRAHADIKUSUMAH', 11),
-(36, 'STO Telkom Sumedang', 11),
-(37, 'Dinas Pemberdayaan Masyarakat Desa', 12),
-(38, 'Bawaslu', 12),
-(39, 'Pubdok Sumedang', 12),
-(40, 'Kecamatan Rancakalong', 12),
-(41, 'Ciho Print Shop', 13),
-(42, 'Kilau Indonesia Cabang Sumedang', 13),
-(43, 'Akbar Photo', 13),
-(44, 'Kantor Pertanahan (ATRI BPN)', 14),
-(45, 'Polsek Sumedang Selatan', 14),
-(46, 'Dinas Lingkungan Hidup Kehutanan (DLHK)', 15),
-(47, 'Unsap FIB', 15),
-(48, 'Kominfo', 16),
-(49, 'Madani Printing', 16),
-(50, 'Mediana Digital Foto & Digital Printing', 16),
-(51, 'PAR Tv', 17),
-(52, 'Pengadilan Negeri Sumedang', 17),
-(53, 'Kantor Six Diary', 17),
-(54, 'Jonas Photo  Jatinangor', 18),
-(55, 'Dinas Tenaga Kerja dan Transmigrasi', 18),
-(56, 'Erks Radio Sumedang', 18),
-(57, 'Disduk Capil Sumedang', 19),
-(58, 'Baznas Sumedang', 19),
-(59, 'Samsat Sumedang', 19),
-(60, 'SMTV', 20),
-(61, 'Q photography', 20),
-(62, 'Dinas Pertanian dan Ketahanan Pangan', 20),
-(63, 'Badan Keuangan dan Aset Daerah', 21),
-(64, 'Lapas Sumedang', 21),
-(65, 'PT Anidar Wisata Persada', 21),
-(66, 'Dinas Pendidikan Sumedang', 22),
-(67, 'Timeless Self Photo', 22),
-(68, 'BAPENDA', 22),
-(69, 'Perumda Air Minum Tirta Medal Sumedang', 23),
-(70, 'DPPKBP3A', 23),
-(71, 'J&T Express', 23),
-(72, 'PT. Kordon Putra Sinergi', 24),
-(73, 'Dinas Pariwisata, Kebudayaan, Kepemudaan dan Olahraga (DISPARBUDPORA)', 24),
-(74, 'Satpol PP Kabupaten Sumedang', 24),
-(75, 'Dinas Perhubungan', 25),
-(76, 'Konveksi Harokah', 25),
-(77, 'Sumedang Ekspress', 26),
-(78, 'STAI Sebelas April Sumedang', 26),
-(79, 'Kelurahan Kota Kulon', 26),
-(80, 'Panti Baca Cerita/Ceria Space', 27),
-(81, 'Dinas Perikanan dan Peternakan', 27),
-(82, 'Dinas Kehutanan', 27),
-(83, 'Konveksi Bestro', 28),
-(84, 'Amorpic Fotography', 28),
-(85, 'PT. Sawala Inovasi Indonesia', 28),
-(86, 'BPJS Kesehatan', 29),
-(87, 'BPJS Ketenagakerjaan Sumedang', 29),
-(88, 'Kementrian Agama', 30),
-(89, 'Badan Pusat Statistik ', 30),
+(1, 'Sekretariat Daerah Sumedang', 0),
+(2, 'Jonas Photo  (Bandung)', 0),
+(3, 'B One Corporation', 0),
+(4, 'Percetakan Sofasco', 0),
+(5, 'Polres Sumedang', 0),
+(6, 'Dinas Pekerjaan Umum', 0),
+(7, 'BAPPPEDA', 0),
+(8, 'PT. Milari Risalah Wisata', 0),
+(9, 'Busy Production', 0),
+(10, 'Freya Clinic', 0),
+(11, 'Sumedang Laptop', 0),
+(12, 'PT. Tritunggal Swarna Factory', 0),
+(13, 'PT. Chlorine Digital Media', 0),
+(14, 'Ismail Copy Center', 0),
+(15, 'PT MULTI BOX INDAH', 0),
+(16, 'PT Newtype Tekno Pioneer', 0),
+(17, 'Dinas Sosial Sumedang', 0),
+(18, 'Dinas Arsip dan Perpustakaan Umum Daerah Sumedang', 0),
+(19, 'PT Elion Hanaya Abyudaya', 0),
+(20, 'FTI UNSAP', 0),
+(21, 'Badan Kesatuan Bangsa dan Politik', 0),
+(22, 'MPP Sumedang', 0),
+(23, 'Cemara Agung', 0),
+(24, 'Dinas Perumahan Kawasan Permukiman', 0),
+(25, 'Percetakan Nadhif', 0),
+(26, 'JNT Cargo', 0),
+(27, 'PLN (Persero)', 0),
+(28, 'PT. TIKI Jalur Nugraha Ekakurir (JNE)', 0),
+(29, 'Pengadilan Agama Sumedang', 0),
+(30, 'Studio Genic', 0),
+(31, 'Dinas Koperasi Usaha Kecil Menengah Perdagangan dan Perindustrian ', 0),
+(32, 'Pegadaian Sumedang', 0),
+(33, 'Kantor Kecamatan Cimalaka', 0),
+(34, 'Dikhan Print', 0),
+(35, 'RSUD UMAR WIRAHADIKUSUMAH', 0),
+(36, 'STO Telkom Sumedang', 0),
+(37, 'Dinas Pemberdayaan Masyarakat Desa', 0),
+(38, 'Bawaslu', 0),
+(39, 'Pubdok Sumedang', 0),
+(40, 'Kecamatan Rancakalong', 0),
+(41, 'Ciho Print Shop', 0),
+(42, 'Kilau Indonesia Cabang Sumedang', 0),
+(43, 'Akbar Photo', 0),
+(44, 'Kantor Pertanahan (ATRI BPN)', 0),
+(45, 'Polsek Sumedang Selatan', 0),
+(46, 'Dinas Lingkungan Hidup Kehutanan (DLHK)', 0),
+(47, 'Unsap FIB', 0),
+(48, 'Kominfo', 0),
+(49, 'Madani Printing', 0),
+(50, 'Mediana Digital Foto & Digital Printing', 0),
+(51, 'PAR Tv', 0),
+(52, 'Pengadilan Negeri Sumedang', 0),
+(53, 'Kantor Six Diary', 0),
+(54, 'Jonas Photo  Jatinangor', 0),
+(55, 'Dinas Tenaga Kerja dan Transmigrasi', 0),
+(56, 'Erks Radio Sumedang', 0),
+(57, 'Disduk Capil Sumedang', 0),
+(58, 'Baznas Sumedang', 0),
+(59, 'Samsat Sumedang', 0),
+(60, 'SMTV', 0),
+(61, 'Q photography', 0),
+(62, 'Dinas Pertanian dan Ketahanan Pangan', 0),
+(63, 'Badan Keuangan dan Aset Daerah', 0),
+(64, 'Lapas Sumedang', 0),
+(65, 'PT Anidar Wisata Persada', 0),
+(66, 'Dinas Pendidikan Sumedang', 0),
+(67, 'Timeless Self Photo', 0),
+(68, 'BAPENDA', 0),
+(69, 'Perumda Air Minum Tirta Medal Sumedang', 0),
+(70, 'DPPKBP3A', 0),
+(71, 'J&T Express', 0),
+(72, 'PT. Kordon Putra Sinergi', 0),
+(73, 'Dinas Pariwisata, Kebudayaan, Kepemudaan dan Olahraga (DISPARBUDPORA)', 0),
+(74, 'Satpol PP Kabupaten Sumedang', 0),
+(75, 'Dinas Perhubungan', 0),
+(76, 'Konveksi Harokah', 0),
+(77, 'Sumedang Ekspress', 0),
+(78, 'STAI Sebelas April Sumedang', 0),
+(79, 'Kelurahan Kota Kulon', 0),
+(80, 'Panti Baca Cerita/Ceria Space', 0),
+(81, 'Dinas Perikanan dan Peternakan', 0),
+(82, 'Dinas Kehutanan', 0),
+(83, 'Konveksi Bestro', 0),
+(84, 'Amorpic Fotography', 0),
+(85, 'PT. Sawala Inovasi Indonesia', 0),
+(86, 'BPJS Kesehatan', 0),
+(87, 'BPJS Ketenagakerjaan Sumedang', 1),
+(88, 'Kementrian Agama', 0),
+(89, 'Badan Pusat Statistik ', 0),
 (90, 'PT Mencari Cinta Sejati', 0),
-(91, 'PT hahahaa', 0);
+(91, 'PT hahahaa', 0),
+(92, 'PT Angin Ribut', 0),
+(93, 'CV Berekbek', 0);
 
 --
 -- Indexes for dumped tables
@@ -723,37 +723,37 @@ ALTER TABLE `tempat_pkl`
 -- AUTO_INCREMENT for table `pembimbing`
 --
 ALTER TABLE `pembimbing`
-  MODIFY `id_pembimbing` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id_pembimbing` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `settings`
 --
 ALTER TABLE `settings`
-  MODIFY `id_settings` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_settings` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `siswa`
 --
 ALTER TABLE `siswa`
-  MODIFY `id_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=402;
+  MODIFY `id_siswa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=402;
 
 --
 -- AUTO_INCREMENT for table `siswa_surat`
 --
 ALTER TABLE `siswa_surat`
-  MODIFY `id_surat_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id_surat_siswa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `surat`
 --
 ALTER TABLE `surat`
-  MODIFY `id_surat` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_surat` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `tempat_pkl`
 --
 ALTER TABLE `tempat_pkl`
-  MODIFY `id_tempat` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
+  MODIFY `id_tempat` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
