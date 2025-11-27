@@ -3,8 +3,32 @@
 
 include 'koneksi.php'; // 1. Include koneksi database
 
-// 2. Ambil Semua Data Siswa
-$query_siswa = "SELECT id_siswa, nis, nama_siswa, kelas, kontak_siswa FROM siswa ORDER BY kelas ASC, nama_siswa ASC";
+// 2. Ambil Semua Data Siswa dengan logika Status Penempatan (Best Practice SQL)
+$query_siswa = "
+    SELECT 
+        s.id_siswa, 
+        s.nis, 
+        s.nama_siswa, 
+        s.kelas, 
+        s.kontak_siswa, 
+        s.id_tempat,
+        tp.nama_tempat,
+        -- Subquery untuk mengambil status terakhir (yang paling baru)
+        (
+            SELECT ss.status
+            FROM siswa_surat ss
+            WHERE ss.id_siswa = s.id_siswa
+            ORDER BY ss.id_surat_siswa DESC -- Asumsi ID yang lebih tinggi adalah status terbaru
+            LIMIT 1
+        ) AS status_pengajuan_terakhir
+    FROM 
+        siswa s
+    LEFT JOIN 
+        tempat_pkl tp ON s.id_tempat = tp.id_tempat
+    ORDER BY 
+        s.kelas ASC, s.nama_siswa ASC
+";
+
 $result_siswa = $koneksi->query($query_siswa);
 
 $data_siswa = [];
@@ -32,11 +56,11 @@ $koneksi->close();
                 <thead>
                     <tr>
                         <th style="width: 50px;">No.</th>
-                        <th>NIS</th>
+                        <th style="width: 150px;">NIS</th>
                         <th>Nama Siswa</th>
                         <th style="width: 100px;">Kelas</th>
-                        <th>Kontak Siswa</th>
-                        <th style="width: 120px;" class="text-center">Aksi</th>
+                        <th style="width: 150px;">Kontak Siswa</th>
+                        <th style="width: 250px;">Status Penempatan PKL</th> <th style="width: 150px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,12 +68,39 @@ $koneksi->close();
                     foreach ($data_siswa as $siswa): ?>
                         <tr>
                             <td class="text-center"><?php echo $no++; ?></td>
-                            <td><strong><?php echo htmlspecialchars($siswa['nis']); ?></strong></td>
-                            <td><?php echo htmlspecialchars($siswa['nama_siswa']); ?></td>
-                            <td><span class="badge-kelas"><?php echo htmlspecialchars($siswa['kelas']); ?></span></td>
+                            <td><?php echo htmlspecialchars($siswa['nis']); ?></td>
+                            <td><strong><?php echo htmlspecialchars($siswa['nama_siswa']); ?></strong></td>
+                            <td><?php echo htmlspecialchars($siswa['kelas']); ?></td>
                             <td><?php echo htmlspecialchars($siswa['kontak_siswa']); ?></td>
+                            
                             <td>
-                                <div class="btn-action-group">
+                                <?php 
+                                    $status_display = '<span class="badge bg-secondary">Belum Diajukan</span>';
+
+                                    if ($siswa['id_tempat'] != 0) {
+                                        // KONDISI 1: Sudah Diterima dan Ditempatkan (id_tempat != 0)
+                                        $status_display = '<span class="badge bg-success" title="Ditempatkan di ' . htmlspecialchars($siswa['nama_tempat']) . '">' . htmlspecialchars($siswa['nama_tempat']) . '</span>';
+                                    } elseif (!empty($siswa['status_pengajuan_terakhir'])) {
+                                        // KONDISI 2: Belum Ditempatkan, tampilkan status pengajuan terakhir
+                                        $status = strtolower($siswa['status_pengajuan_terakhir']);
+                                        
+                                        $badge_class = 'bg-secondary';
+                                        if ($status == 'diterima') {
+                                            $badge_class = 'bg-info text-white'; // Diterima tapi belum ada id_tempat (pending penempatan/update)
+                                        } elseif ($status == 'ditolak') {
+                                            $badge_class = 'bg-danger';
+                                        } elseif ($status == 'pending') {
+                                            $badge_class = 'bg-warning text-dark';
+                                        }
+                                        
+                                        $status_display = '<span class="badge ' . $badge_class . '">Status Surat: ' . ucfirst($status) . '</span>';
+                                    }
+                                    
+                                    echo $status_display;
+                                ?>
+                            </td>
+                            <td>
+                                <div class="" role="group">
                                     <button class="btn btn-sm btn-warning edit-btn" data-id="<?php echo $siswa['id_siswa']; ?>" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -66,24 +117,23 @@ $koneksi->close();
 
     </div>
 </div>
+
 <script>
     $(document).ready(function() {
-        // Inisialisasi DataTables dengan konfigurasi clean
-        $('#siswaTable').DataTable({
-            // Urutan default: Kolom Kelas (index 3), lalu Nama Siswa (index 2)
+        // Inisialisasi DataTables
+        var table = $('#siswaTable').DataTable({
             "order": [
-                [3, "asc"], // Kelas
-                [2, "asc"] // Nama Siswa
-            ],
-            // Definisi kolom
+                [3, 'asc'],
+                [2, 'asc']
+            ], // Urutkan berdasarkan Kelas dan Nama
             "columnDefs": [{
                     "orderable": false,
                     "searchable": false,
-                    "targets": [0, 5]
+                    "targets": [6] // Kolom No (0), Status Penempatan (5), dan Aksi (6) non-sortable/searchable
                 },
                 {
                     "className": "text-center",
-                    "targets": [0, 5]
+                    "targets": [0, 6]
                 }
             ],
             // Bahasa Indonesia
@@ -98,7 +148,7 @@ $koneksi->close();
                 titleAttr: 'Export Data ke Excel',
                 className: 'btn btn-success',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4] // Export semua kecuali kolom Aksi
+                    columns: [0, 1, 2, 3, 4, 5] // Export semua kolom data (termasuk status baru)
                 },
                 title: 'Data Siswa PKL SMK Informatika Sumedang',
                 filename: 'Data_Siswa_PKL_' + new Date().toISOString().slice(0, 10)
@@ -116,19 +166,22 @@ $koneksi->close();
         $('#tambahSiswaBtn').on('click', function(e) {
             e.preventDefault();
             alert("Aksi Tambah Siswa akan diarahkan ke form input.");
+            // loadContent('form_tambah_siswa.php'); // Contoh penggunaan loadContent
         });
 
         // Event handler untuk tombol Edit
         $('#siswaTable tbody').on('click', '.edit-btn', function() {
             var id = $(this).data('id');
             alert('Aksi Edit Siswa ID: ' + id + ' (Akan diarahkan ke halaman edit).');
+            // loadContent('form_edit_siswa.php?id=' + id); // Contoh penggunaan loadContent
         });
 
         // Event handler untuk tombol Hapus
         $('#siswaTable tbody').on('click', '.delete-btn', function() {
             var id = $(this).data('id');
-            if (confirm('Anda yakin ingin menghapus Siswa ID: ' + id + '?')) {
-                alert('Aksi Hapus Siswa ID: ' + id + ' (Akan memproses penghapusan).');
+            if (confirm('Anda yakin ingin menghapus data siswa ini? Tindakan ini tidak dapat dibatalkan.')) {
+                alert('Aksi Hapus Siswa ID: ' + id + ' (AJAX call to delete_siswa.php).');
+                // Implementasi AJAX call untuk penghapusan
             }
         });
     });
