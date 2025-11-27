@@ -38,8 +38,7 @@ $koneksi->close();
                         <th>Tempat PKL</th>
                         <th style="width: 150px;">Tanggal</th>
                         <th style="width: 150px;">Status Balasan</th>
-                        <th style="width: 120px;" class="text-center">Aksi</th>
-                    </tr>
+                        <th style="width: 170px;" class="text-center">Aksi</th> </tr>
                 </thead>
                 <tbody>
                     <?php $no = 1;
@@ -57,11 +56,13 @@ $koneksi->close();
                                     echo '<span class="badge bg-secondary">Belum Dibalas</span>';
                                 } ?></td>
                             <td>
-                                <div class="btn-action-group">
-                                    <button class="btn btn-sm btn-warning edit-btn" data-id="<?php echo $surat['id_surat']; ?>" title="Edit">
+                                <div class="btn-action-group" aria-label="Aksi Surat">
+                                    <button class="btn btn-sm btn-warning edit-btn" data-id="<?php echo $surat['id_surat']; ?>" title="Input Balasan">
                                         Input Balasan
                                     </button>
-
+                                    <button class="btn btn-sm btn-danger delete-btn" data-id="<?php echo $surat['id_surat']; ?>" data-no-surat="<?php echo htmlspecialchars($surat['no_surat']); ?>" title="Hapus">
+                                        <i class="fas fa-trash"></i> Hapus
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -77,18 +78,18 @@ $koneksi->close();
 <script>
     $(document).ready(function() {
         // Inisialisasi DataTables dengan konfigurasi clean
-        $('#siswaTable').DataTable({
+        var table = $('#siswaTable').DataTable({
             // Urutan default: Berdasarkan data yang sudah diurutkan dari query (DESC)
             "order": [], // Kosongkan agar mengikuti urutan dari database
             // Definisi kolom
             "columnDefs": [{
                     "orderable": false,
                     "searchable": false,
-                    "targets": [0, 4]
+                    "targets": [0, 4, 5] // Kolom 'Aksi' di index 5 juga dibuat non-sortable/searchable
                 },
                 {
                     "className": "text-center",
-                    "targets": [0, 4]
+                    "targets": [0, 4, 5]
                 }
             ],
             // Bahasa Indonesia
@@ -103,7 +104,7 @@ $koneksi->close();
                 titleAttr: 'Export Data ke Excel',
                 className: 'btn btn-success',
                 exportOptions: {
-                    columns: [0, 1, 2, 3] // Export semua kecuali kolom Aksi
+                    columns: [0, 1, 2, 3] // Export semua kecuali kolom Status Balasan dan Aksi (index 4 dan 5)
                 },
                 title: 'Data Surat PKL SMK Informatika Sumedang',
                 filename: 'Data_Surat_PKL_' + new Date().toISOString().slice(0, 10)
@@ -118,19 +119,42 @@ $koneksi->close();
         });
 
 
-        // Ganti event handler tombol Edit
-        // Ganti event handler tombol Edit di data_surat.php
+        // Event handler tombol Edit (Input Balasan)
         $('#siswaTable tbody').on('click', '.edit-btn', function() {
             var id = $(this).data('id');
-            // Arahkan ke kelola siswa terlebih dahulu
+            // Arahkan ke halaman proses balasan surat
             loadContent('proses_balasan_surat.php?id=' + id);
         });
 
-        // Event handler untuk tombol Hapus
+        // Event handler untuk tombol Hapus (AJAX)
         $('#siswaTable tbody').on('click', '.delete-btn', function() {
-            var id = $(this).data('id');
-            if (confirm('Anda yakin ingin menghapus Surat ID: ' + id + '?')) {
-                alert('Aksi Hapus Surat ID: ' + id + ' (Akan memproses penghapusan).');
+            var id_surat = $(this).data('id');
+            var no_surat = $(this).data('no-surat');
+            var $row = $(this).closest('tr'); // Ambil baris tabel untuk dihapus
+
+            if (confirm('Anda yakin ingin menghapus Surat:\n' + no_surat + '\n\nPerhatian! Tindakan ini juga akan menghapus semua data siswa yang terkait dengan surat ini.')) {
+                // Kirim permintaan AJAX ke skrip penghapusan
+                $.ajax({
+                    url: 'ajax/hapus_surat.php', // Buat file ini (Lihat bagian di bawah)
+                    type: 'POST',
+                    data: {
+                        id_surat: id_surat
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            // Hapus baris dari DataTables tanpa me-reload halaman
+                            table.row($row).remove().draw(false);
+                            alert(response.message);
+                        } else {
+                            alert('Gagal menghapus surat: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", status, error);
+                        alert('Terjadi kesalahan saat menghubungi server: ' + status);
+                    }
+                });
             }
         });
     });

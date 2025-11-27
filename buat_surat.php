@@ -4,7 +4,7 @@
 
 include 'koneksi.php'; // Include file koneksi
 
-// --- LOGIKA GENERASI NOMOR SURAT OTOMATIS ---
+// --- LOGIKA GENERASI NOMOR SURAT OTOMATIS (FIXED) ---
 
 // 1. Ambil Data Settings (termasuk format_nomor_surat)
 $settings = [];
@@ -25,15 +25,28 @@ if ($result_settings && $result_settings->num_rows > 0) {
     ];
 }
 
-// 2. Ambil Nomor Urut Surat Terakhir
+// 2. Ambil Nomor Urut Surat Terakhir (LOGIKA PERBAIKAN)
 $nomor_urut_terakhir = 0;
-$query_last_number = "SELECT COUNT(*) as total_surat FROM surat";
+
+/* * Query di bawah mengambil 3 digit pertama dari no_surat,
+ * mengubahnya menjadi angka (CAST), dan mencari nilai terbesar.
+ */
+$query_last_number = "
+    SELECT 
+        CAST(SUBSTR(no_surat, 1, 3) AS UNSIGNED) AS nomor_urut_tertinggi
+    FROM surat
+    ORDER BY nomor_urut_tertinggi DESC
+    LIMIT 1
+";
 $result_last_number = $koneksi->query($query_last_number);
 
-if ($result_last_number) {
+if ($result_last_number && $result_last_number->num_rows > 0) {
     $row = $result_last_number->fetch_assoc();
-    $nomor_urut_terakhir = $row['total_surat'];
+    // Jika ada data, ambil nomor urut tertinggi
+    $nomor_urut_terakhir = $row['nomor_urut_tertinggi'];
 }
+// Jika tidak ada data, $nomor_urut_terakhir tetap 0.
+
 
 // 3. Hitung Nomor Surat Baru
 $nomor_urut_baru = $nomor_urut_terakhir + 1;
@@ -311,6 +324,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
     }
 
     // Fungsi pemicu pencarian siswa
+    // Fungsi pemicu pencarian siswa
     function triggerStudentSearch() {
         const query = studentSearchInput.val();
         if (query.length < 2) {
@@ -329,9 +343,12 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 searchResults.empty();
                 if (data.length > 0) {
                     data.forEach(siswa => {
+                        // Cek apakah siswa sudah dipilih di front-end (Map)
                         const isSelected = selectedStudents.has(parseInt(siswa.id_siswa));
+                        // Karena backend sudah memfilter siswa 'pending'/'diterima',
+                        // siswa yang ditampilkan di sini dipastikan eligible.
                         const disabledClass = isSelected ? 'disabled' : '';
-                        const alertText = isSelected ? ' (Sudah dipilih)' : ' (Klik untuk tambah)';
+                        const alertText = isSelected ? ' (Sudah ada di daftar surat)' : ' (Klik untuk tambah)';
                         
                         const item = `<a href="#" class="list-group-item list-group-item-action ${disabledClass}" 
                                          data-id="${siswa.id_siswa}" 
@@ -344,7 +361,8 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                         searchResults.append(item);
                     });
                 } else {
-                    searchResults.html('<div class="alert alert-warning m-0">Siswa tidak ditemukan.</div>');
+                    // Pesan Umpan Balik yang Lebih Baik (UI/UX Friendly)
+                    searchResults.html('<div class="alert alert-warning m-0">Siswa tidak ditemukan, atau <strong>sedang dalam status pengajuan PKL aktif (Pending/Diterima)</strong>.</div>');
                 }
             },
             error: function() {
