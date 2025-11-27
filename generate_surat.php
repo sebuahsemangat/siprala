@@ -33,7 +33,8 @@ $data_sekolah = [
     'email_sekolah' => 'info@smkifsu.sch.id', // Data tetap
     'website_sekolah' => 'www.smkifsu.sch.id', // Data tetap
     'kepala_sekolah' => $_POST['nama_kepsek'] ?? 'NAMA KEPALA SEKOLAH TIDAK DITEMUKAN',
-    'kop' => imageToBase64($base_path . '/kop.jpg'), 
+    'kop' => imageToBase64($base_path . '/img/kop.jpg'), 
+    'ttd' => imageToBase64($base_path . '/img/ttd.png')
 ];
 
 // Data Pengajuan dari input dinamis
@@ -147,7 +148,6 @@ $koneksi->close();
 // =================================================================================
 // --- LANJUT KE GENERATE PDF ---
 // =================================================================================
-
 
 // 4. Set Dompdf Options
 $options = new Options();
