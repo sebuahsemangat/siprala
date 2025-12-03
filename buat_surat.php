@@ -81,7 +81,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row" style="display:none;">
                     <div class="col-md-6">
                         <label for="tgl_mulai_display" class="form-label">Tanggal Mulai PKL</label>
                         <input type="text" class="form-control" id="tgl_mulai_display" value="<?php echo $settings['tgl_mulai']; ?>" disabled>
@@ -93,7 +93,15 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                         <input type="hidden" name="tgl_selesai" value="<?php echo $settings['tgl_selesai']; ?>">
                     </div>
                 </div>
-
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="perihal" class="form-label">Perihal</label>
+                        <select name="perihal" id="perihal" class="form-control">
+                            <option value="Pengajuan Tempat Praktik Kerja Lapangan (PKL)">Pengajuan Tempat Praktik Kerja Lapangan (PKL)</option>
+                            <option value="Penambahan Siswa Praktik Kerja Lapangan (PKL)">Penambahan Siswa Praktik Kerja Lapangan (PKL)</option>
+                        </select>
+                    </div>
+                </div>
                 <input type="hidden" name="nama_sekolah" value="<?php echo $settings['nama_sekolah']; ?>">
                 <input type="hidden" name="nama_kepsek" value="<?php echo $settings['nama_kepsek']; ?>">
             </fieldset>
@@ -125,9 +133,6 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 <legend class="float-none w-auto px-2 fs-6 text-success">Daftar Peserta PKL</legend>
 
                 <div class="row mb-3">
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-sm btn-success" id="addStudentBtn"><i class="fas fa-user-plus"></i> Tambah Siswa Manual</button>
-                    </div>
                     <div class="col-auto">
                         <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#studentSearchModal"><i class="fas fa-search"></i> Cari & Tambah Siswa</button>
                     </div>
@@ -377,7 +382,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
     loadTempatPkl();
 
     // Event Listener untuk tombol Tambah Siswa Manual
-    addStudentBtn.addEventListener('click', () => addStudentRow());
+    // addStudentBtn.addEventListener('click', () => addStudentRow());
     
     // Event Listener untuk tombol Hapus Siswa Terakhir
     removeStudentBtn.addEventListener('click', removeLastStudentRow);

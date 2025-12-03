@@ -45,7 +45,7 @@ $tanggal_surat_db = $_POST['tanggal_surat'] ?? date('Y-m-d'); // YYYY-MM-DD
 $data_pengajuan = [
     'nomor_surat' => $_POST['nomor_surat'] ?? '000/000/000',
     'lampiran' => '1 Lampiran',
-    'perihal' => 'Praktik Kerja Lapangan (PKL)',
+    'perihal' => $_POST['perihal'],
     'tanggal_surat' => date('d F Y', strtotime($tanggal_surat_db)),
     'tanggal_mulai_pkl' => $tgl_mulai_db,
     'tanggal_selesai_pkl' => $tgl_selesai_db,
@@ -114,8 +114,8 @@ try {
     }
 
     // 2. INSERT Data Surat ke tabel 'surat'
-    $stmt = $koneksi->prepare("INSERT INTO surat (no_surat, id_tempat_pkl, tanggal) VALUES (?, ?, ?)");
-    $stmt->bind_param("sis", $data_pengajuan['nomor_surat'], $id_tempat_pkl, $tanggal_surat_db);
+    $stmt = $koneksi->prepare("INSERT INTO surat (no_surat, perihal, id_tempat_pkl, tanggal) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssis", $data_pengajuan['nomor_surat'], $data_pengajuan['perihal'], $id_tempat_pkl, $tanggal_surat_db);
     $stmt->execute();
     $id_surat = $koneksi->insert_id;
     $stmt->close();

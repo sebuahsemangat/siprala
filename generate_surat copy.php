@@ -1,11 +1,13 @@
 <?php
-// generate_surat.php - VERSI PERBAIKAN
-// PASTIKAN TIDAK ADA SPASI/ENTER SEBELUM <?php
+// generate_surat.php - FINAL DENGAN TRANSAKSI DATABASE LENGKAP
 
-// 1. Load Composer Autoload
+// 1. Load Composer Autoload & Library
 require 'vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
+
+// --- KRITIS: INCLUDE KONEKSI DATABASE ---
+include 'koneksi.php';
 
 // **DEFINISIKAN BASE PATH ABSOLUT**
 $base_path = __DIR__;
@@ -13,85 +15,160 @@ $base_path = __DIR__;
 // **FUNGSI UNTUK CONVERT GAMBAR KE BASE64**
 function imageToBase64($imagePath) {
     if (!file_exists($imagePath)) {
-        error_log("File tidak ditemukan: " . $imagePath);
-        return false;
+        die("ERROR: File gambar tidak ditemukan di path: " . $imagePath);
     }
-    
     $imageData = file_get_contents($imagePath);
-    if ($imageData === false) {
-        error_log("Gagal membaca file: " . $imagePath);
-        return false;
-    }
-    
     $imageInfo = getimagesize($imagePath);
     $mimeType = $imageInfo['mime'];
-    
     return 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
 }
 
-// --- DATA DINAMIS DARI INPUT PENGGUNA/DATABASE ---
+
+// --- DATA DINAMIS DARI FORM POST ---
+// Data sekolah statis (diambil dari hidden input form yang datanya sudah dari DB)
 $data_sekolah = [
-    'nama_sekolah' => 'Sekolah Menengah Kejuruan (SMK) INFORMATIKA SUMEDANG',
-    'alamat_sekolah' => 'Jalan Angkrek Situ No.19 Sumedang 45323',
-    'telp_sekolah' => '(0261) 202767',
-    'email_sekolah' => 'info@smkifsu.sch.id',
-    'website_sekolah' => 'www.smkifsu.sch.id',
-    'kepala_sekolah' => 'Tatang Suryana, S.Ag., M.Pd',
-    // Convert ke Base64 untuk kompatibilitas maksimal
-    // 'logo_smk' => imageToBase64($base_path . '/logo_ifsu.png'), 
-    // 'logo_yps' => imageToBase64($base_path . '/logo_yps.png'),
-    'kop' => imageToBase64($base_path . '/kop.jpg'),
+    'nama_sekolah' => $_POST['nama_sekolah'] ?? 'NAMA SEKOLAH TIDAK DITEMUKAN',
+    'alamat_sekolah' => 'Jalan Angkrek Situ No.19 Sumedang 45323', // Data tetap
+    'telp_sekolah' => '(0261) 202767', // Data tetap
+    'email_sekolah' => 'info@smkifsu.sch.id', // Data tetap
+    'website_sekolah' => 'www.smkifsu.sch.id', // Data tetap
+    'kepala_sekolah' => $_POST['nama_kepsek'] ?? 'NAMA KEPALA SEKOLAH TIDAK DITEMUKAN',
+    'kop' => imageToBase64($base_path . '/img/kop.jpg'), 
+    'ttd' => imageToBase64($base_path . '/img/ttd.png')
 ];
 
-// Validasi logo
-// if ($data_sekolah['logo_smk'] === false || $data_sekolah['logo_yps'] === false) {
-//     die("ERROR: File logo tidak ditemukan. Pastikan logo_ifsu.png dan logo_yps.png ada di folder yang sama dengan script ini.");
-// }
+// Data Pengajuan dari input dinamis
+$tgl_mulai_db = $_POST['tgl_mulai'] ?? '2025-01-01';
+$tgl_selesai_db = $_POST['tgl_selesai'] ?? '2025-01-01';
+$tanggal_surat_db = $_POST['tanggal_surat'] ?? date('Y-m-d'); // YYYY-MM-DD
 
 $data_pengajuan = [
-    'nomor_surat' => '104/PAN-PKL/SMK-IF/YPS/X/2025',
+    'nomor_surat' => $_POST['nomor_surat'] ?? '000/000/000',
     'lampiran' => '1 Lampiran',
-    'perihal' => 'Praktik Kerja Lapangan (PKL)',
-    'tanggal_surat' => '06 Oktober 2025',
-    'tanggal_mulai_pkl' => '01 Desember 2025',
-    'tanggal_selesai_pkl' => '31 Maret 2026',
+    'perihal' => $_POST['perihal'],
+    'tanggal_surat' => date('d F Y', strtotime($tanggal_surat_db)),
+    'tanggal_mulai_pkl' => $tgl_mulai_db,
+    'tanggal_selesai_pkl' => $tgl_selesai_db,
 ];
 
+// Data Perusahaan dari input dinamis
+$nama_perusahaan_db = $_POST['nama_perusahaan'] ?? 'Perusahaan Tidak Diketahui';
 $data_perusahaan = [
-    'yth_tujuan' => 'Yth. HRD PT. Sawala Inovasi Indonesia',
-    'alamat_tujuan' => 'Jl.R.A Kartini No.28, Regol Wetan, Sumedang Selatan 45311',
-    'kota_tujuan' => 'Sumedang',
+    'yth_tujuan' => 'Yth. ' . ($_POST['tujuan_departemen'] ?? 'Pimpinan') . ' ' . $nama_perusahaan_db,
+    'alamat_tujuan' => $_POST['alamat_perusahaan'] ?? 'Alamat Perusahaan',
+    'kota_tujuan' => $_POST['kota_perusahaan'] ?? 'KOTA',
 ];
 
-$data_siswa = [
-    ['nama' => 'Muhammad Aprizal Sanjaya', 'kelas' => 'XII-RPL 1', 'hp' => '081313011934'],
-    ['nama' => 'Ripan Nugraha', 'kelas' => 'XII-RPL 1', 'hp' => '085861556201'],
-];
+// Data Siswa (Diproses dari array dinamis)
+// Structure: $_POST['siswa'][id_siswa][nama/kelas/hp]
+$data_siswa_raw = $_POST['siswa'] ?? [];
+$data_siswa = [];
+$id_siswa_list = []; // List untuk INSERT ke siswa_surat
 
-// 2. Set Dompdf Options
+foreach ($data_siswa_raw as $id_siswa => $siswa) { 
+    if (is_array($siswa) && !empty($siswa['nama']) && !empty($siswa['kelas']) && !empty($siswa['hp'])) {
+        $data_siswa[] = [
+            'nama' => htmlspecialchars($siswa['nama']),
+            'kelas' => htmlspecialchars($siswa['kelas']),
+            'hp' => htmlspecialchars($siswa['hp']),
+        ];
+        // Tambahkan id_siswa ke list untuk INSERT ke DB
+        $id_siswa_list[] = intval($id_siswa);
+    }
+}
+
+if (empty($data_siswa)) {
+    die("ERROR: Daftar siswa tidak boleh kosong.");
+}
+
+
+// =================================================================================
+// --- TRANSAKSI DATABASE KRITIS ---
+// =================================================================================
+$id_tempat_pkl = null;
+$id_surat = null;
+
+try {
+    // 1. Cek atau INSERT Tempat PKL Baru
+    $stmt = $koneksi->prepare("SELECT id_tempat FROM tempat_pkl WHERE nama_tempat = ?");
+    $stmt->bind_param("s", $nama_perusahaan_db);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        // Tempat PKL sudah ada
+        $row = $result->fetch_assoc();
+        $id_tempat_pkl = $row['id_tempat'];
+    } else {
+        // Tempat PKL BARU: INSERT dan dapatkan ID-nya
+        $stmt_insert = $koneksi->prepare("INSERT INTO tempat_pkl (nama_tempat) VALUES (?)");
+        $stmt_insert->bind_param("s", $nama_perusahaan_db);
+        $stmt_insert->execute();
+        $id_tempat_pkl = $koneksi->insert_id;
+        $stmt_insert->close();
+    }
+    $stmt->close();
+    
+    if (is_null($id_tempat_pkl)) {
+         throw new Exception("Gagal mendapatkan ID Tempat PKL.");
+    }
+
+    // 2. INSERT Data Surat ke tabel 'surat'
+    $stmt = $koneksi->prepare("INSERT INTO surat (no_surat, id_tempat_pkl, tanggal) VALUES (?, ?, ?)");
+    $stmt->bind_param("sis", $data_pengajuan['nomor_surat'], $id_tempat_pkl, $tanggal_surat_db);
+    $stmt->execute();
+    $id_surat = $koneksi->insert_id;
+    $stmt->close();
+
+    if (is_null($id_surat)) {
+         throw new Exception("Gagal mendapatkan ID Surat yang baru dibuat.");
+    }
+    
+    // 3. INSERT Data Siswa ke tabel 'siswa_surat'
+    $stmt = $koneksi->prepare("INSERT INTO siswa_surat (id_siswa, id_surat) VALUES (?, ?)");
+    foreach ($id_siswa_list as $id_siswa) {
+        $stmt->bind_param("ii", $id_siswa, $id_surat);
+        if (!$stmt->execute()) {
+             // Jika gagal (misal duplikat), log error tapi jangan hentikan proses
+             error_log("Gagal memasukkan siswa ID $id_siswa ke surat ID $id_surat: " . $stmt->error);
+        }
+    }
+    $stmt->close();
+    
+} catch (Exception $e) {
+    // Handle error (misalnya koneksi gagal, nomor surat duplikat)
+    $koneksi->close();
+    die("Transaksi Database Gagal: " . $e->getMessage() . " Silakan cek log error.");
+}
+
+// Tutup koneksi setelah semua transaksi selesai
+$koneksi->close();
+
+
+// =================================================================================
+// --- LANJUT KE GENERATE PDF ---
+// =================================================================================
+
+// 4. Set Dompdf Options
 $options = new Options();
-$options->set('defaultFont', 'Arial');
+$options->set('defaultFont', 'Times New Roman');
 $options->set('isHtml5ParserEnabled', true);
-$options->set('isRemoteEnabled', true);
-// MATIKAN DEBUG - INI YANG MENYEBABKAN OUTPUT!
-$options->set('debugPng', false);
-$options->set('debugKeepTemp', false);
-$options->set('debugCss', false);
+$options->set('isRemoteEnabled', true); 
 
 $dompdf = new Dompdf($options);
 
-// 3. Tangkap Output HTML dari template 
+// 5. Tangkap Output HTML dari template
 ob_start();
 include 'template_surat.php'; 
 $html = ob_get_clean();
 
-// 4. Load HTML, Atur Kertas, dan Render
+// 6. Load HTML, Atur Kertas, dan Render
 $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
-// 5. Output PDF
-$filename = "Surat_PKL_" . date('Ymd') . ".pdf";
+// 7. Output PDF
+$filename = "Surat_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
 $dompdf->stream($filename, ["Attachment" => 1]);
 
 exit(0);

@@ -4,7 +4,7 @@
 include 'koneksi.php'; // 1. Include koneksi database
 
 // 2. Ambil Semua Data Surat dengan JOIN ke tabel tempat_pkl
-$query_surat = "SELECT s.id_surat, s.no_surat, s.tanggal, s.status_balasan, t.nama_tempat, s.id_tempat_pkl
+$query_surat = "SELECT s.id_surat, s.no_surat, s.perihal, s.tanggal, s.status_balasan, t.nama_tempat, s.id_tempat_pkl
                 FROM surat s
                 LEFT JOIN tempat_pkl t ON s.id_tempat_pkl = t.id_tempat
                 ORDER BY s.id_surat DESC";
@@ -35,10 +35,12 @@ $koneksi->close();
                     <tr>
                         <th style="width: 50px;">No.</th>
                         <th>No. Surat</th>
+                        <th>Perihal</th>
                         <th>Tempat PKL</th>
                         <th style="width: 150px;">Tanggal</th>
                         <th style="width: 150px;">Status Balasan</th>
-                        <th style="width: 170px;" class="text-center">Aksi</th> </tr>
+                        <th style="width: 170px;" class="text-center">Aksi</th>
+                    </tr>
                 </thead>
                 <tbody>
                     <?php $no = 1;
@@ -46,6 +48,10 @@ $koneksi->close();
                         <tr>
                             <td class="text-center"><?php echo $no++; ?></td>
                             <td><strong><?php echo htmlspecialchars($surat['no_surat']); ?></strong></td>
+                            <td><?php $perihal = htmlspecialchars($surat['perihal']);
+                            $singkat_perihal = explode(" ", $perihal);
+                            echo htmlspecialchars($singkat_perihal[0]);
+                            ?></td>
                             <td><?php echo htmlspecialchars($surat['nama_tempat']); ?></td>
                             <td><?php echo date('d-m-Y', strtotime($surat['tanggal'])); ?></td>
                             <td>
@@ -54,13 +60,17 @@ $koneksi->close();
                                     echo '<span class="badge bg-success">Sudah Dibalas</span>';
                                 } else {
                                     echo '<span class="badge bg-secondary">Belum Dibalas</span>';
-                                } ?></td>
+                                } ?>
+                            </td>
                             <td>
                                 <div class="btn-action-group" aria-label="Aksi Surat">
-                                    <button class="btn btn-sm btn-warning edit-btn" data-id="<?php echo $surat['id_surat']; ?>" title="Input Balasan">
+                                    <button class="btn btn-sm btn-warning edit-btn"
+                                        data-id="<?php echo $surat['id_surat']; ?>" title="Input Balasan">
                                         Input Balasan
                                     </button>
-                                    <button class="btn btn-sm btn-danger delete-btn" data-id="<?php echo $surat['id_surat']; ?>" data-no-surat="<?php echo htmlspecialchars($surat['no_surat']); ?>" title="Hapus">
+                                    <button class="btn btn-sm btn-danger delete-btn"
+                                        data-id="<?php echo $surat['id_surat']; ?>"
+                                        data-no-surat="<?php echo htmlspecialchars($surat['no_surat']); ?>" title="Hapus">
                                         <i class="fas fa-trash"></i> Hapus
                                     </button>
                                 </div>
@@ -76,21 +86,21 @@ $koneksi->close();
 
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Inisialisasi DataTables dengan konfigurasi clean
         var table = $('#siswaTable').DataTable({
             // Urutan default: Berdasarkan data yang sudah diurutkan dari query (DESC)
             "order": [], // Kosongkan agar mengikuti urutan dari database
             // Definisi kolom
             "columnDefs": [{
-                    "orderable": false,
-                    "searchable": false,
-                    "targets": [0, 4, 5] // Kolom 'Aksi' di index 5 juga dibuat non-sortable/searchable
-                },
-                {
-                    "className": "text-center",
-                    "targets": [0, 4, 5]
-                }
+                "orderable": false,
+                "searchable": false,
+                "targets": [0, 4, 5] // Kolom 'Aksi' di index 5 juga dibuat non-sortable/searchable
+            },
+            {
+                "className": "text-center",
+                "targets": [0, 4, 5]
+            }
             ],
             // Bahasa Indonesia
             "language": {
@@ -120,14 +130,14 @@ $koneksi->close();
 
 
         // Event handler tombol Edit (Input Balasan)
-        $('#siswaTable tbody').on('click', '.edit-btn', function() {
+        $('#siswaTable tbody').on('click', '.edit-btn', function () {
             var id = $(this).data('id');
             // Arahkan ke halaman proses balasan surat
             loadContent('proses_balasan_surat.php?id=' + id);
         });
 
         // Event handler untuk tombol Hapus (AJAX)
-        $('#siswaTable tbody').on('click', '.delete-btn', function() {
+        $('#siswaTable tbody').on('click', '.delete-btn', function () {
             var id_surat = $(this).data('id');
             var no_surat = $(this).data('no-surat');
             var $row = $(this).closest('tr'); // Ambil baris tabel untuk dihapus
@@ -141,7 +151,7 @@ $koneksi->close();
                         id_surat: id_surat
                     },
                     dataType: 'json',
-                    success: function(response) {
+                    success: function (response) {
                         if (response.status === 'success') {
                             // Hapus baris dari DataTables tanpa me-reload halaman
                             table.row($row).remove().draw(false);
@@ -150,7 +160,7 @@ $koneksi->close();
                             alert('Gagal menghapus surat: ' + response.message);
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.error("AJAX Error:", status, error);
                         alert('Terjadi kesalahan saat menghubungi server: ' + status);
                     }
