@@ -3,6 +3,7 @@
 
 // 1. Load Composer Autoload & Library
 require 'vendor/autoload.php';
+
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -13,7 +14,8 @@ include 'koneksi.php';
 $base_path = __DIR__;
 
 // **FUNGSI UNTUK CONVERT GAMBAR KE BASE64**
-function imageToBase64($imagePath) {
+function imageToBase64($imagePath)
+{
     if (!file_exists($imagePath)) {
         die("ERROR: File gambar tidak ditemukan di path: " . $imagePath);
     }
@@ -33,7 +35,7 @@ $data_sekolah = [
     'email_sekolah' => 'info@smkifsu.sch.id', // Data tetap
     'website_sekolah' => 'www.smkifsu.sch.id', // Data tetap
     'kepala_sekolah' => $_POST['nama_kepsek'] ?? 'NAMA KEPALA SEKOLAH TIDAK DITEMUKAN',
-    'kop' => imageToBase64($base_path . '/img/kop.jpg'), 
+    'kop' => imageToBase64($base_path . '/img/kop.jpg'),
     'ttd' => imageToBase64($base_path . '/img/ttd.png')
 ];
 
@@ -41,6 +43,8 @@ $data_sekolah = [
 $tgl_mulai_db = $_POST['tgl_mulai'] ?? '2025-01-01';
 $tgl_selesai_db = $_POST['tgl_selesai'] ?? '2025-01-01';
 $tanggal_surat_db = $_POST['tanggal_surat'] ?? date('Y-m-d'); // YYYY-MM-DD
+$no_surat_referensi = $_POST['no_surat_referensi'] ?? '';
+$tanggal_surat_referensi = $_POST['tanggal_surat_referensi'] ?? '';
 
 $data_pengajuan = [
     'nomor_surat' => $_POST['nomor_surat'] ?? '000/000/000',
@@ -49,12 +53,15 @@ $data_pengajuan = [
     'tanggal_surat' => date('d F Y', strtotime($tanggal_surat_db)),
     'tanggal_mulai_pkl' => $tgl_mulai_db,
     'tanggal_selesai_pkl' => $tgl_selesai_db,
+    'no_surat_referensi' => $no_surat_referensi,
+    'tanggal_surat_referensi' => date('d F Y', strtotime($tanggal_surat_referensi))
 ];
 
 // Data Perusahaan dari input dinamis
 $nama_perusahaan_db = $_POST['nama_perusahaan'] ?? 'Perusahaan Tidak Diketahui';
 $data_perusahaan = [
-    'yth_tujuan' => 'Yth. ' . ($_POST['tujuan_departemen'] ?? 'Pimpinan') . ' ' . $nama_perusahaan_db,
+    'yth' => 'Yth. ' . ($_POST['tujuan_departemen'] ?? 'Pimpinan'),
+    'tujuan' => $nama_perusahaan_db,
     'alamat_tujuan' => $_POST['alamat_perusahaan'] ?? 'Alamat Perusahaan',
     'kota_tujuan' => $_POST['kota_perusahaan'] ?? 'KOTA',
 ];
@@ -65,7 +72,7 @@ $data_siswa_raw = $_POST['siswa'] ?? [];
 $data_siswa = [];
 $id_siswa_list = []; // List untuk INSERT ke siswa_surat
 
-foreach ($data_siswa_raw as $id_siswa => $siswa) { 
+foreach ($data_siswa_raw as $id_siswa => $siswa) {
     if (is_array($siswa) && !empty($siswa['nama']) && !empty($siswa['kelas']) && !empty($siswa['hp'])) {
         $data_siswa[] = [
             'nama' => htmlspecialchars($siswa['nama']),
@@ -94,7 +101,7 @@ try {
     $stmt->bind_param("s", $nama_perusahaan_db);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows > 0) {
         // Tempat PKL sudah ada
         $row = $result->fetch_assoc();
@@ -108,9 +115,9 @@ try {
         $stmt_insert->close();
     }
     $stmt->close();
-    
+
     if (is_null($id_tempat_pkl)) {
-         throw new Exception("Gagal mendapatkan ID Tempat PKL.");
+        throw new Exception("Gagal mendapatkan ID Tempat PKL.");
     }
 
     // 2. INSERT Data Surat ke tabel 'surat'
@@ -121,20 +128,19 @@ try {
     $stmt->close();
 
     if (is_null($id_surat)) {
-         throw new Exception("Gagal mendapatkan ID Surat yang baru dibuat.");
+        throw new Exception("Gagal mendapatkan ID Surat yang baru dibuat.");
     }
-    
+
     // 3. INSERT Data Siswa ke tabel 'siswa_surat'
     $stmt = $koneksi->prepare("INSERT INTO siswa_surat (id_siswa, id_surat) VALUES (?, ?)");
     foreach ($id_siswa_list as $id_siswa) {
         $stmt->bind_param("ii", $id_siswa, $id_surat);
         if (!$stmt->execute()) {
-             // Jika gagal (misal duplikat), log error tapi jangan hentikan proses
-             error_log("Gagal memasukkan siswa ID $id_siswa ke surat ID $id_surat: " . $stmt->error);
+            // Jika gagal (misal duplikat), log error tapi jangan hentikan proses
+            error_log("Gagal memasukkan siswa ID $id_siswa ke surat ID $id_surat: " . $stmt->error);
         }
     }
     $stmt->close();
-    
 } catch (Exception $e) {
     // Handle error (misalnya koneksi gagal, nomor surat duplikat)
     $koneksi->close();
@@ -153,13 +159,17 @@ $koneksi->close();
 $options = new Options();
 $options->set('defaultFont', 'Times New Roman');
 $options->set('isHtml5ParserEnabled', true);
-$options->set('isRemoteEnabled', true); 
+$options->set('isRemoteEnabled', true);
 
 $dompdf = new Dompdf($options);
 
 // 5. Tangkap Output HTML dari template
 ob_start();
-include 'template_surat.php'; 
+if ($data_pengajuan['perihal'] == "Pengajuan Tempat Praktik Kerja Lapangan (PKL)") {
+    include 'template_surat.php';
+} else {
+    include 'template_surat_penambahan.php';
+}
 $html = ob_get_clean();
 
 // 6. Load HTML, Atur Kertas, dan Render
@@ -168,7 +178,13 @@ $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
 // 7. Output PDF
+if ($data_pengajuan['perihal'] == "Pengajuan Tempat Praktik Kerja Lapangan (PKL)") {
 $filename = "Surat_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
+}
+else {
+    $filename = "Surat_Penambahan Siswa_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
+
+}
 $dompdf->stream($filename, ["Attachment" => 1]);
 
 exit(0);

@@ -93,13 +93,35 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                         <input type="hidden" name="tgl_selesai" value="<?php echo $settings['tgl_selesai']; ?>">
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="perihal" class="form-label">Perihal</label>
                         <select name="perihal" id="perihal" class="form-control">
                             <option value="Pengajuan Tempat Praktik Kerja Lapangan (PKL)">Pengajuan Tempat Praktik Kerja Lapangan (PKL)</option>
                             <option value="Penambahan Siswa Praktik Kerja Lapangan (PKL)">Penambahan Siswa Praktik Kerja Lapangan (PKL)</option>
+                            <option value="Pembatalan Siswa Praktik Kerja Lapangan (PKL)">Pembatalan Siswa Praktik Kerja Lapangan (PKL)</option>
                         </select>
+                    </div>
+                    
+                    <div class="col-md-6" id="container_referensi" style="display: none;">
+                        <label for="id_referensi_surat" class="form-label">Pilih Tempat PKL (Referensi Surat)</label>
+                        <select id="id_referensi_surat" class="form-select">
+                            <option value="">-- Pilih Tempat --</option>
+                            </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3" id="container_no_surat_ref" style="display: none;">
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">Nomor Surat Sebelumnya</label>
+                        <input type="text" class="form-control bg-light" id="display_no_surat_referensi" readonly placeholder="Otomatis terisi...">
+                        <input type="hidden" name="no_surat_referensi" id="val_no_surat_referensi">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">Tanggal Surat Sebelumnya</label>
+                        <input type="text" class="form-control bg-light" id="display_tanggal_referensi" readonly placeholder="Otomatis terisi...">
+                        <input type="hidden" name="tanggal_surat_referensi" id="val_tanggal_referensi">
                     </div>
                 </div>
                 <input type="hidden" name="nama_sekolah" value="<?php echo $settings['nama_sekolah']; ?>">
@@ -177,32 +199,24 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
 </div>
 
 <script>
-(function() {
+$(document).ready(function() {
     'use strict';
-    
-    // Inisialisasi variabel - gunakan window untuk persistence dan mencegah error deklarasi ulang
-    if (typeof window.studentCount === 'undefined') {
-        window.studentCount = 0;
-    }
-    if (typeof window.selectedStudents === 'undefined') {
-        window.selectedStudents = new Map();
-    } else {
-        // Reset selectedStudents jika halaman dimuat ulang
-        window.selectedStudents.clear();
-    }
-    
-    // Alias untuk kemudahan penggunaan
+
+    // --- LOGIKA SISWA (KODE LAMA DIPERBAIKI SCOPE-NYA) ---
+    // Menggunakan window object agar variabel tetap tersimpan meski script di-reload
+    if (typeof window.studentCount === 'undefined') window.studentCount = 0;
+    if (typeof window.selectedStudents === 'undefined') window.selectedStudents = new Map();
+    else window.selectedStudents.clear();
+
     let studentCount = window.studentCount;
     const selectedStudents = window.selectedStudents;
 
     const studentList = document.getElementById('student-list');
-    const addStudentBtn = document.getElementById('addStudentBtn');
     const removeStudentBtn = document.getElementById('removeStudentBtn');
     const studentSearchInput = $('#studentSearchInput');
     const searchResults = $('#searchResults');
 
-
-    // Fungsi untuk memuat data Tempat PKL via AJAX
+    // Load datalist tempat PKL (untuk input manual)
     function loadTempatPkl() {
         $.ajax({
             url: 'get_tempat_pkl.php',
@@ -211,19 +225,18 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
             success: function(data) {
                 const datalist = $('#datalistOptions');
                 datalist.empty();
-                data.forEach(function(nama) {
-                    datalist.append(`<option value="${nama}">`);
-                });
-            },
-            error: function() {
-                console.error('Gagal memuat data tempat PKL');
+                if(data && data.length > 0) {
+                    data.forEach(function(nama) {
+                        datalist.append(`<option value="${nama}">`);
+                    });
+                }
             }
         });
     }
+    loadTempatPkl();
 
-    // Fungsi untuk menambah baris siswa (digunakan manual dan dari hasil search)
-    function addStudentRow(id = null, name = '', className = '', phone = '') {
-        // Jika siswa sudah ada (dari search), jangan tambahkan
+    // Fungsi Tambah Baris Siswa
+    window.addStudentRow = function(id = null, name = '', className = '', phone = '') {
         if (id !== null && selectedStudents.has(id)) {
             alert(`Siswa ${name} sudah ada dalam daftar.`);
             return;
@@ -232,113 +245,59 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
         window.studentCount++;
         studentCount = window.studentCount;
         const currentId = id === null ? `manual_${studentCount}` : id;
-        
-        // Tandai siswa sudah dipilih (hanya jika ada ID dari DB)
+
         if (id !== null) {
             selectedStudents.set(id, name);
-            window.selectedStudents = selectedStudents;
-            // Refresh hasil pencarian di modal
-            triggerStudentSearch(); 
+            triggerStudentSearch();
         }
 
-        const row = document.createElement('div');
-        row.className = 'row student-row-group';
-        row.id = `student-row-${currentId}`;
+        const row = `
+            <div class="row student-row-group" id="student-row-${currentId}">
+                <div class="col-md-1 d-flex align-items-center justify-content-center"><strong class="text-primary fs-5"></strong>${id !== null ? `<input type="hidden" name="siswa[${id}][id]" value="${id}">` : ''}</div>
+                <div class="col-md-3"><label class="form-label">Nama Siswa</label><input type="text" class="form-control" name="siswa[${currentId}][nama]" value="${name}" required></div>
+                <div class="col-md-4"><label class="form-label">Kelas</label><input type="text" class="form-control" name="siswa[${currentId}][kelas]" value="${className}" required></div>
+                <div class="col-md-3"><label class="form-label">No. Handphone</label><input type="text" class="form-control" name="siswa[${currentId}][hp]" value="${phone}" required></div>
+                <div class="col-md-1 d-flex align-items-center justify-content-center"><button type="button" class="btn btn-sm btn-danger remove-custom-btn" data-id="${currentId}"><i class="fas fa-times"></i></button></div>
+            </div>`;
         
-        row.innerHTML = `
-            <div class="col-md-1 d-flex align-items-center justify-content-center">
-                <strong class="text-primary fs-5"></strong>
-                ${id !== null ? `<input type="hidden" name="siswa[${id}][id]" value="${id}">` : ''}
-            </div>
-            <div class="col-md-3">
-                <label for="siswa_nama_${currentId}" class="form-label">Nama Siswa</label>
-                <input type="text" class="form-control" name="siswa[${currentId}][nama]" value="${name}" required>
-            </div>
-            <div class="col-md-4">
-                <label for="siswa_kelas_${currentId}" class="form-label">Kelas</label>
-                <input type="text" class="form-control" name="siswa[${currentId}][kelas]" value="${className}" required>
-            </div>
-            <div class="col-md-3">
-                <label for="siswa_hp_${currentId}" class="form-label">No. Handphone</label>
-                <input type="text" class="form-control" name="siswa[${currentId}][hp]" value="${phone}" required>
-            </div>
-            <div class="col-md-1 d-flex align-items-center justify-content-center">
-                <button type="button" class="btn btn-sm btn-danger remove-custom-btn" data-id="${currentId}">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-        
-        studentList.appendChild(row);
+        $('#student-list').append(row);
         updateStudentButtons();
+        $('#student-list').scrollTop($('#student-list')[0].scrollHeight);
 
-        // Scroll to the bottom of the list
-        studentList.scrollTop = studentList.scrollHeight;
-
-        // Tutup modal jika penambahan berhasil dari modal
         if (id !== null) {
             $('#studentSearchModal').modal('hide');
             studentSearchInput.val('');
             searchResults.empty();
         }
-    }
+    };
 
-    // Fungsi untuk menghapus baris siswa
     function removeStudentRow(rowId) {
         const row = document.getElementById(`student-row-${rowId}`);
         if (row) {
-            // Cek apakah ini siswa dari DB (punya ID numerik)
             const dbIdMatch = rowId.toString().match(/^(\d+)$/);
             if (dbIdMatch) {
                 const idToRemove = parseInt(dbIdMatch[1]);
-                if (selectedStudents.has(idToRemove)) {
-                    selectedStudents.delete(idToRemove);
-                    window.selectedStudents = selectedStudents;
-                    // Refresh hasil pencarian di modal setelah dihapus
-                    triggerStudentSearch(); 
-                }
+                selectedStudents.delete(idToRemove);
             }
-
             row.remove();
-            window.studentCount--;
-            studentCount = window.studentCount;
             updateStudentButtons();
         }
     }
 
-    // Fungsi untuk menghapus baris terakhir (via tombol Hapus Siswa Terakhir)
-    function removeLastStudentRow() {
-        const rows = studentList.querySelectorAll('.student-row-group');
-        if (rows.length > 0) {
-            const lastRow = rows[rows.length - 1];
-            const rowId = lastRow.id.replace('student-row-', '');
-            removeStudentRow(rowId);
-        }
-    }
-
-
     function updateStudentButtons() {
-        // Tombol 'Hapus Siswa Terakhir' aktif jika ada siswa
-        removeStudentBtn.disabled = studentList.childElementCount === 0;
-        
-        // Memastikan penomoran siswa (1., 2., dst.) tetap benar
-        const numberElements = studentList.querySelectorAll('.student-row-group strong');
-        numberElements.forEach((el, index) => {
-            el.textContent = `${index + 1}.`;
+        $('#removeStudentBtn').prop('disabled', $('#student-list').children().length === 0);
+        $('#student-list .student-row-group strong').each(function(index) {
+            $(this).text(`${index + 1}.`);
         });
     }
 
-    // Fungsi pemicu pencarian siswa
-    // Fungsi pemicu pencarian siswa
     function triggerStudentSearch() {
         const query = studentSearchInput.val();
         if (query.length < 2) {
-            searchResults.html('<div class="alert alert-info m-0">Ketik minimal 2 karakter untuk mencari siswa.</div>');
+            searchResults.html('<div class="alert alert-info m-0">Ketik minimal 2 karakter.</div>');
             return;
         }
-
         searchResults.html('<div class="text-center p-3"><span class="spinner-border spinner-border-sm"></span> Mencari...</div>');
-
         $.ajax({
             url: 'search_siswa.php',
             method: 'GET',
@@ -348,82 +307,138 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 searchResults.empty();
                 if (data.length > 0) {
                     data.forEach(siswa => {
-                        // Cek apakah siswa sudah dipilih di front-end (Map)
                         const isSelected = selectedStudents.has(parseInt(siswa.id_siswa));
-                        // Karena backend sudah memfilter siswa 'pending'/'diterima',
-                        // siswa yang ditampilkan di sini dipastikan eligible.
                         const disabledClass = isSelected ? 'disabled' : '';
-                        const alertText = isSelected ? ' (Sudah ada di daftar surat)' : ' (Klik untuk tambah)';
-                        
-                        const item = `<a href="#" class="list-group-item list-group-item-action ${disabledClass}" 
-                                         data-id="${siswa.id_siswa}" 
-                                         data-nama="${siswa.nama_siswa}" 
-                                         data-kelas="${siswa.kelas}" 
-                                         data-hp="${siswa.kontak_siswa}">
-                                         <strong>${siswa.nis} - ${siswa.nama_siswa}</strong><br>
-                                         <small>${siswa.kelas} - HP: ${siswa.kontak_siswa}${alertText}</small>
-                                      </a>`;
+                        const item = `<a href="#" class="list-group-item list-group-item-action ${disabledClass}" onclick="addStudentRow(${siswa.id_siswa}, '${siswa.nama_siswa}', '${siswa.kelas}', '${siswa.kontak_siswa}'); return false;"><strong>${siswa.nis} - ${siswa.nama_siswa}</strong><br><small>${siswa.kelas}</small></a>`;
                         searchResults.append(item);
                     });
                 } else {
-                    // Pesan Umpan Balik yang Lebih Baik (UI/UX Friendly)
-                    searchResults.html('<div class="alert alert-warning m-0">Siswa tidak ditemukan, atau <strong>sedang dalam status pengajuan PKL aktif (Pending/Diterima)</strong>.</div>');
+                    searchResults.html('<div class="alert alert-warning m-0">Siswa tidak ditemukan.</div>');
                 }
-            },
-            error: function() {
-                searchResults.html('<div class="alert alert-danger m-0">Gagal terhubung ke server pencarian.</div>');
             }
         });
     }
 
-    // --- Event Listeners ---
-    
-    // Load tempat pkl saat form dimuat
-    loadTempatPkl();
-
-    // Event Listener untuk tombol Tambah Siswa Manual
-    // addStudentBtn.addEventListener('click', () => addStudentRow());
-    
-    // Event Listener untuk tombol Hapus Siswa Terakhir
-    removeStudentBtn.addEventListener('click', removeLastStudentRow);
-
-    // Event Listener untuk tombol Hapus Custom per Baris
-    $(studentList).on('click', '.remove-custom-btn', function() {
-        const rowId = $(this).data('id');
-        removeStudentRow(rowId);
+    // Event Listeners Siswa
+    $('#removeStudentBtn').on('click', function() {
+        $('#student-list .student-row-group').last().find('.remove-custom-btn').click();
+    });
+    $(document).on('click', '.remove-custom-btn', function() {
+        removeStudentRow($(this).data('id'));
+    });
+    studentSearchInput.on('keyup', function() {
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(triggerStudentSearch, 300);
     });
 
-    // Event Listener untuk input pencarian siswa di modal
-    studentSearchInput.on('keyup', debounce(triggerStudentSearch, 300));
-
-    // Event Listener untuk memilih siswa dari hasil pencarian (di modal)
-    searchResults.on('click', '.list-group-item:not(.disabled)', function(e) {
-        e.preventDefault();
-        const id = parseInt($(this).data('id'));
-        const nama = $(this).data('nama');
-        const kelas = $(this).data('kelas');
-        const hp = $(this).data('hp');
-        
-        addStudentRow(id, nama, kelas, hp);
-    });
+    // --- LOGIKA BARU: REFERENSI SURAT (FIXED) ---
     
-    // Utility debounce function
-    function debounce(func, delay) {
-        let timeout;
-        return function(...args) {
-            const context = this;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), delay);
-        };
+    // Variabel Cache
+    let referensiDataCache = [];
+
+    function loadReferensiSurat() {
+        // Jika sudah ada cache, pakai itu
+        if (referensiDataCache.length > 0) {
+            populateReferensiDropdown(referensiDataCache);
+            return;
+        }
+
+        // Tampilkan loading di console untuk debug
+        console.log("Mengambil data referensi surat...");
+
+        $.ajax({
+            url: 'get_referensi_surat.php', 
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                console.log("Data diterima:", data); // DEBUG: Cek console browser (F12)
+                referensiDataCache = data;
+                populateReferensiDropdown(data);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", error);
+                console.log("Response:", xhr.responseText);
+                alert('Gagal mengambil data referensi surat. Cek console untuk detail.');
+            }
+        });
     }
 
-    // Default: Tambahkan dua siswa awal (opsional, bisa dihapus jika tidak mau ada siswa default)
-    // if (studentCount === 0) {
-    //     addStudentRow(null, 'Muhammad Aprizal Sanjaya', 'XII-RPL 1', '081313011934');
-    //     addStudentRow(null, 'Ripan Nugraha', 'XII-RPL 1', '085861556201');
-    // }
+    function populateReferensiDropdown(data) {
+        const selectRef = $('#id_referensi_surat');
+        selectRef.empty();
+        selectRef.append('<option value="">-- Pilih Tempat PKL --</option>');
+        
+        if (data.length === 0) {
+             selectRef.append('<option value="" disabled>Tidak ada riwayat pengajuan ditemukan</option>');
+             return;
+        }
 
-    updateStudentButtons(); // Panggil pertama kali
-    
-})();
+        data.forEach(function(item) {
+            // PERUBAHAN DISINI: Tambahkan data-tanggal="${item.tanggal}"
+            selectRef.append(`<option value="${item.id_tempat}" 
+                data-nosurat="${item.no_surat}" 
+                data-nama="${item.nama_tempat}" 
+                data-tanggal="${item.tanggal}">
+                ${item.nama_tempat} (Surat: ${item.no_surat})
+            </option>`);
+        });
+    }
+
+    // Event Delegate: Gunakan $(document).on agar aman untuk elemen dinamis
+    $(document).on('change', '#perihal', function() {
+        const selected = $(this).val();
+        const containerRef = $('#container_referensi');
+        const containerNoSuratRef = $('#container_no_surat_ref');
+
+        if (selected === 'Penambahan Siswa Praktik Kerja Lapangan (PKL)') {
+            containerRef.show(); 
+            containerNoSuratRef.show();
+            loadReferensiSurat(); // Panggil fungsi load
+        } else if (selected === 'Pembatalan Siswa Praktik Kerja Lapangan (PKL)') {
+            alert("Pembatalan Siswa Dipilih");
+            containerRef.hide();
+            containerNoSuratRef.hide();
+            $('#id_referensi_surat').val('');
+            $('#display_no_surat_referensi').val('');
+        } else {
+            containerRef.hide();
+            containerNoSuratRef.hide();
+            $('#id_referensi_surat').val('');
+            $('#display_no_surat_referensi').val('');
+        }
+    });
+
+    $(document).on('change', '#id_referensi_surat', function() {
+        const selectedOption = $(this).find(':selected');
+        
+        // Ambil data dari atribut
+        const noSurat = selectedOption.data('nosurat');
+        const namaTempat = selectedOption.data('nama');
+        const tanggalSurat = selectedOption.data('tanggal'); // Ambil tanggal
+        const idTempat = $(this).val();
+
+        if (idTempat) {
+            // Isi Nomor Surat
+            $('#display_no_surat_referensi').val(noSurat);
+            $('#val_no_surat_referensi').val(noSurat);
+            
+            // Isi Tanggal Surat (BARU)
+            $('#display_tanggal_referensi').val(tanggalSurat);
+            $('#val_tanggal_referensi').val(tanggalSurat);
+
+            // Auto fill nama perusahaan
+            $('#nama_perusahaan').val(namaTempat);
+        } else {
+            // Kosongkan jika tidak ada yang dipilih
+            $('#display_no_surat_referensi').val('');
+            $('#val_no_surat_referensi').val('');
+            
+            $('#display_tanggal_referensi').val('');
+            $('#val_tanggal_referensi').val('');
+            
+            $('#nama_perusahaan').val('');
+        }
+    });
+
+});
 </script>

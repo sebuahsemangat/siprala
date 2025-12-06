@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 27, 2025 at 07:40 AM
+-- Generation Time: Dec 06, 2025 at 02:43 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.16
 
@@ -117,9 +117,9 @@ CREATE TABLE `siswa` (
 --
 
 INSERT INTO `siswa` (`id_siswa`, `nis`, `nama_siswa`, `kelas`, `kontak_siswa`, `id_pembimbing`, `id_tempat`, `password`, `password_status`) VALUES
-(1, '23241307', 'Nayla Atansa Z', 'XII-RPL 1', '081316629105', 1, 87, '$2y$10$3N/RDaERv75TKiZ32lmlzevMpU3fWdEBgMfamNqK11HIO4fyk5J86', 0),
-(2, '23241023', 'Nazila Nur Haida', 'XII-RPL 1', '085318951133', 1, 87, '$2y$10$mPYkRXA2OGJ.wrSvFCRqse4v/D9B0xVkL9y6vp62lngNAHGc7N54.', 0),
-(3, '23241031', 'Salsabila Chosyah', 'XII-RPL 1', '082263031014', 1, 87, '$2y$10$osTj09h/IdbGRM0.v2m5bewJceIyxQ8qo9N7HoHgJGPeOuSdSBQSu', 0),
+(1, '23241307', 'Nayla Atansa Z', 'XII-RPL 1', '081316629105', 0, 0, '$2y$10$3N/RDaERv75TKiZ32lmlzevMpU3fWdEBgMfamNqK11HIO4fyk5J86', 0),
+(2, '23241023', 'Nazila Nur Haida', 'XII-RPL 1', '085318951133', 0, 0, '$2y$10$mPYkRXA2OGJ.wrSvFCRqse4v/D9B0xVkL9y6vp62lngNAHGc7N54.', 0),
+(3, '23241031', 'Salsabila Chosyah', 'XII-RPL 1', '082263031014', 0, 0, '$2y$10$osTj09h/IdbGRM0.v2m5bewJceIyxQ8qo9N7HoHgJGPeOuSdSBQSu', 0),
 (4, '23241159', 'Kaka Sujana', 'XII-RPL 5', '087711658309', 0, 0, '$2y$10$grG.NXF1Ot0geHB4vU/jg.FtUDnnGxlAbUB64tvMZBurLKnVmwbEi', 0),
 (5, '23241261', 'Firasty Shafira I', 'XII-RPL 1', '081770057316', 0, 0, '$2y$10$X4OeP/TU5CQDbQYPuODNG.lfFFFfCcELTgj8LBhh16FWkguIPhC.i', 0),
 (6, '23241044', 'Denis Ameraldi', 'XII-RPL 3', '081573399691', 0, 0, '$2y$10$je1fIGnrPlxjWztowQr4/uQZgzT.kgzIc/8Dm0c94tQFjJiu25Rra', 0),
@@ -534,15 +534,6 @@ CREATE TABLE `siswa_surat` (
   `catatan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `siswa_surat`
---
-
-INSERT INTO `siswa_surat` (`id_surat_siswa`, `id_siswa`, `id_surat`, `status`, `catatan`) VALUES
-(49, 1, 30, 'diterima', ''),
-(50, 2, 30, 'diterima', ''),
-(51, 3, 30, 'diterima', '');
-
 -- --------------------------------------------------------
 
 --
@@ -552,17 +543,11 @@ INSERT INTO `siswa_surat` (`id_surat_siswa`, `id_siswa`, `id_surat`, `status`, `
 CREATE TABLE `surat` (
   `id_surat` int NOT NULL,
   `no_surat` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `perihal` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `id_tempat_pkl` int NOT NULL,
   `tanggal` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `status_balasan` enum('Sudah Dibalas','Belum Dibalas','','') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Belum Dibalas'
+  `status_balasan` enum('Sudah Dibalas','Belum Dibalas') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Belum Dibalas'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `surat`
---
-
-INSERT INTO `surat` (`id_surat`, `no_surat`, `id_tempat_pkl`, `tanggal`, `status_balasan`) VALUES
-(30, '001/PAN-PKL/SMK-IF/YPS/XI/2025', 87, '2025-11-27', 'Sudah Dibalas');
 
 -- --------------------------------------------------------
 
@@ -667,7 +652,7 @@ INSERT INTO `tempat_pkl` (`id_tempat`, `nama_tempat`, `id_pembimbing`) VALUES
 (84, 'Amorpic Fotography', 0),
 (85, 'PT. Sawala Inovasi Indonesia', 0),
 (86, 'BPJS Kesehatan', 0),
-(87, 'BPJS Ketenagakerjaan Sumedang', 1),
+(87, 'BPJS Ketenagakerjaan Sumedang', 0),
 (88, 'Kementrian Agama', 0),
 (89, 'Badan Pusat Statistik ', 0),
 (90, 'PT Mencari Cinta Sejati', 0),
@@ -741,13 +726,13 @@ ALTER TABLE `siswa`
 -- AUTO_INCREMENT for table `siswa_surat`
 --
 ALTER TABLE `siswa_surat`
-  MODIFY `id_surat_siswa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id_surat_siswa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `surat`
 --
 ALTER TABLE `surat`
-  MODIFY `id_surat` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id_surat` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `tempat_pkl`

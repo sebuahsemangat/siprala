@@ -144,7 +144,7 @@ function make_address_row($data)
             <td style="border: none;"></td>
             <td style="border: none;">Lampiran</td>
             <td style="border: none;">:</td>
-            <td style="border: none;"><?php echo $data_pengajuan['lampiran']; ?></td>
+            <td style="border: none;">-</td>
         </tr>
         <tr>
             <td style="border: none;"></td>
@@ -174,58 +174,9 @@ function make_address_row($data)
                 <br>
                 Dengan hormat,
                 <p style="text-align: justify; text-indent: 50px;">
-                    Sehubungan dengan pelaksanaan Praktik Kerja Lapangan (PKL) di Dunia Usaha, Dunia Industri, dan Dunia
-                    Kerja (DUDIKA) yang merupakan salah satu kegiatan yang harus ditempuh oleh siswa-siswi
-                    <?php echo $data_sekolah['nama_sekolah']; ?>, maka dengan ini kami sampaikan permohonan izin
-                    melaksanakan Praktik Kerja tersebut di Perusahaan / Instansi yang Bapak/Ibu pimpin. Adapun
-                    pelaksanaan Praktik Kerja Lapangan (PKL) tersebut akan dilaksanakan mulai tanggal
-                    <strong><?php echo $data_pengajuan['tanggal_mulai_pkl']; ?> s.d.
-                        <?php echo $data_pengajuan['tanggal_selesai_pkl']; ?></strong>. (Data siswa terlampir)
-                    <br>
-                </p>
-                <p style="text-align: justify; text-indent: 50px;">Besar harapan kami, apabila Bapak/Ibu dapat
-                    mengabulkan permohonan kami. Atas perhatian dan kerjasamanya kami sampaikan terima kasih.</p>
-            </td>
-        </tr>
-    </table>
-
-    <div class="tanda-tangan">
-        <p>Sumedang, <?php echo $data_pengajuan['tanggal_surat']; ?></p>
-        <p>Kepala Sekolah,</p>
-        <div style="height: 60px;">
-            <img src="<?php echo $data_sekolah['ttd']; ?>" alt="Tanda Tangan Kepala Sekolah" style="max-height: 50px;">
-        </div>
-        <p><strong><?php echo $data_sekolah['kepala_sekolah']; ?></strong></p>
-    </div>
-
-
-    <div class="lampiran">
-        <div class="lampiran-header">
-            <table style="width: 100%; border-collapse: collapse; font-size: 11pt;">
-                <tr>
-                    <td style="width: 8%; border: none;"></td>
-                    <td style="width: 15%; border: none;">Lampiran Surat</td>
-                    <td style="width: 1%; border: none;"></td>
-                    <td style="border: none;"></td>
-                </tr>
-                <tr>
-                    <td style="width: 8%; border: none;"></td>
-                    <td style="width: 15%; border: none;">Nomor</td>
-                    <td style="width: 1%; border: none;">:</td>
-                    <td style="border: none;"><?php echo $data_pengajuan['nomor_surat']; ?></td>
-                </tr>
-                <tr>
-                    <td style="border: none;"></td>
-                    <td style="border: none;">Perihal</td>
-                    <td style="border: none;">:</td>
-                    <td style="border: none;"><strong><?php echo $data_pengajuan['perihal']; ?></strong></td>
-                </tr>
-            </table>
-        </div>
-        <br>
-        <br>
-        <p style="text-align: center; font-weight: bold;">NAMA PESERTA PRAKTIK KERJA LAPANGAN (PKL)</p>
-        <table class="lampiran-table">
+                    Berikut ini kami lampirkan penambahan nama siswa peserta PKL (Praktik Kerja Lapangan) dari surat kami terdahulu dengan nomor <?php echo $data_pengajuan['no_surat_referensi']; ?> tanggal <?php echo $data_pengajuan['tanggal_surat_referensi']; ?> di <?php echo $data_perusahaan['tujuan'];?> yang Bapak/Ibu pimpin dan akan dilaksanakan pada <strong><?php echo $data_pengajuan['tanggal_mulai_pkl']; ?> s.d.
+                        <?php echo $data_pengajuan['tanggal_selesai_pkl']; ?></strong>. Adapun tambahan siswa tersebut adalah:
+                        <table class="lampiran-table">
             <thead>
                 <tr>
                     <th style="width: 5%;">No.</th>
@@ -246,15 +197,21 @@ function make_address_row($data)
                 <?php endforeach; ?>
             </tbody>
         </table>
+                    <br>
+                </p>
+                <p style="text-align: justify; text-indent: 50px;">Demikian surat lampiran ini, atas perhatian dan kerjasama Bapak/Ibu kami ucapkan terima kasih.</p>
+            </td>
+        </tr>
+    </table>
 
-        <div class="tanda-tangan">
-            <p>Sumedang, <?php echo $data_pengajuan['tanggal_surat']; ?></p>
-            <p>Kepala Sekolah,</p>
-            <div style="height: 60px;">
+    <div class="tanda-tangan">
+        <p>Sumedang, <?php echo $data_pengajuan['tanggal_surat']; ?></p>
+        <p>Kepala Sekolah,</p>
+        <div style="height: 60px;">
             <img src="<?php echo $data_sekolah['ttd']; ?>" alt="Tanda Tangan Kepala Sekolah" style="max-height: 50px;">
         </div>
         <p><strong><?php echo $data_sekolah['kepala_sekolah']; ?></strong></p>
-        </div>
+    </div>
 
 </body>
 

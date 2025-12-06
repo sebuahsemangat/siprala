@@ -54,7 +54,7 @@ $result_siswa = $stmt_siswa->get_result();
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nomor Surat:</label>
-                        <p class="form-control-static"><strong><?php echo htmlspecialchars($data_surat['no_surat']); ?></strong></p>
+                        <p class="form-control-static"><strong><?php echo htmlspecialchars($data_surat['no_surat']); ?></strong> | <?php echo htmlspecialchars($data_surat['perihal']); ?></p>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Tujuan Tempat PKL:</label>
