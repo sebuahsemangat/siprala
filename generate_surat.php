@@ -167,8 +167,10 @@ $dompdf = new Dompdf($options);
 ob_start();
 if ($data_pengajuan['perihal'] == "Pengajuan Tempat Praktik Kerja Lapangan (PKL)") {
     include 'template_surat.php';
-} else {
+} else if ($data_pengajuan['perihal'] == "Penambahan Siswa Praktik Kerja Lapangan (PKL)") {
     include 'template_surat_penambahan.php';
+} else if ($data_pengajuan['perihal'] == "Pembatalan Siswa Praktik Kerja Lapangan (PKL)") {
+    include 'template_surat_pembatalan.php';
 }
 $html = ob_get_clean();
 

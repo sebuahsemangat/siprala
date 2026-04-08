@@ -5,7 +5,7 @@
 define('DB_SERVER', 'localhost');
 define('DB_USER', 'root'); // Ganti dengan username database Anda
 define('DB_PASSWORD', ''); // Ganti dengan password database Anda
-define('DB_NAME', 'surat_pkl'); // Nama database sesuai permintaan Anda
+define('DB_NAME', 'siprala'); // Nama database sesuai permintaan Anda
 
 // Buat Koneksi
 $koneksi = new mysqli(DB_SERVER, DB_USER, DB_PASSWORD, DB_NAME);

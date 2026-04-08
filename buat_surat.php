@@ -99,7 +99,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                         <select name="perihal" id="perihal" class="form-control">
                             <option value="Pengajuan Tempat Praktik Kerja Lapangan (PKL)">Pengajuan Tempat Praktik Kerja Lapangan (PKL)</option>
                             <option value="Penambahan Siswa Praktik Kerja Lapangan (PKL)">Penambahan Siswa Praktik Kerja Lapangan (PKL)</option>
-                            <option value="Pembatalan Siswa Praktik Kerja Lapangan (PKL)">Pembatalan Siswa Praktik Kerja Lapangan (PKL)</option>
+                            <option value="Pemberitahuan Pembatalan Siswa Praktik Kerja Lapangan (PKL)">Pemberitahuan Pembatalan Siswa Praktik Kerja Lapangan (PKL)</option>
                         </select>
                     </div>
                     

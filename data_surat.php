@@ -26,7 +26,6 @@ $koneksi->close();
     <div class="card-body container-form">
 
         <div class="mb-4">
-
         </div>
 
         <div class="table-responsive">
@@ -39,7 +38,7 @@ $koneksi->close();
                         <th>Tempat PKL</th>
                         <th style="width: 150px;">Tanggal</th>
                         <th style="width: 150px;">Status Balasan</th>
-                        <th style="width: 170px;" class="text-center">Aksi</th>
+                        <th style="width: 200px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,6 +63,10 @@ $koneksi->close();
                             </td>
                             <td>
                                 <div class="btn-action-group" aria-label="Aksi Surat">
+                                    <button class="btn btn-sm btn-danger batal-btn"
+                                        data-id="<?php echo $surat['id_surat']; ?>" title="Ajukan Pembatalan">
+                                        Ajukan Pembatalan
+                                    </button>
                                     <button class="btn btn-sm btn-warning edit-btn"
                                         data-id="<?php echo $surat['id_surat']; ?>" title="Input Balasan">
                                         Input Balasan
@@ -134,6 +137,12 @@ $koneksi->close();
             var id = $(this).data('id');
             // Arahkan ke halaman proses balasan surat
             loadContent('proses_balasan_surat.php?id=' + id);
+        });
+
+        // Event handler tombol Ajukan Pembatalan
+        $('#siswaTable tbody').on('click', '.batal-btn', function () {
+            var id = $(this).data('id');
+            loadContent('buat_surat_pembatalan.php?id_surat_ref=' + id);
         });
 
         // Event handler untuk tombol Hapus (AJAX)
