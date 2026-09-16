@@ -52,6 +52,13 @@ try {
 
     // Commit transaksi jika semua berhasil
     $koneksi->commit();
+
+    // Hapus file arsip PDF jika ada
+    $file_arsip = dirname(__DIR__) . '/arsip_surat/surat_' . $id_surat . '.pdf';
+    if (file_exists($file_arsip)) {
+        @unlink($file_arsip);
+    }
+
     echo json_encode(['status' => 'success', 'message' => 'Surat dan data siswa terkait berhasil dihapus.']);
 
 } catch (Exception $e) {

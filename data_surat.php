@@ -38,7 +38,7 @@ $koneksi->close();
                         <th>Tempat PKL</th>
                         <th style="width: 150px;">Tanggal</th>
                         <th style="width: 150px;">Status Balasan</th>
-                        <th style="width: 200px;" class="text-center">Aksi</th>
+                        <th style="width: 260px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,6 +63,10 @@ $koneksi->close();
                             </td>
                             <td>
                                 <div class="btn-action-group" aria-label="Aksi Surat">
+                                    <a href="cetak_surat.php?id=<?php echo $surat['id_surat']; ?>" target="_blank"
+                                        class="btn btn-sm btn-info text-white" title="Cetak / Buka Surat">
+                                        <i class="fas fa-print me-1"></i> Cetak
+                                    </a>
                                     <?php if ($surat['perihal'] != 'Pemberitahuan Pembatalan Siswa Praktik Kerja Lapangan (PKL)'): ?>
                                         <button class="btn btn-sm btn-danger batal-btn"
                                             data-id="<?php echo $surat['id_surat']; ?>" title="Ajukan Pembatalan">

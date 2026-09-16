@@ -148,5 +148,15 @@ $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
+// Simpan Arsip PDF ke Folder Server
+$arsip_dir = __DIR__ . '/arsip_surat';
+if (!is_dir($arsip_dir)) {
+    mkdir($arsip_dir, 0777, true);
+}
+if (!empty($id_surat_baru)) {
+    file_put_contents($arsip_dir . '/surat_' . $id_surat_baru . '.pdf', $dompdf->output());
+}
+
 $filename = "Surat_Pembatalan_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan) . ".pdf";
 $dompdf->stream($filename, ["Attachment" => 0]);
+

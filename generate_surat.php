@@ -236,13 +236,21 @@ $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
-// 7. Output PDF
+// 7. Simpan Arsip PDF ke Folder Server
+$arsip_dir = __DIR__ . '/arsip_surat';
+if (!is_dir($arsip_dir)) {
+    mkdir($arsip_dir, 0777, true);
+}
+if (!empty($id_surat)) {
+    file_put_contents($arsip_dir . '/surat_' . $id_surat . '.pdf', $dompdf->output());
+}
+
+// 8. Tampilkan PDF (Preview di Browser)
 if ($data_pengajuan['perihal'] == "Pengajuan Tempat Praktik Kerja Lapangan (PKL)") {
     $filename = "Surat_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
 } else {
     $filename = "Surat_Penambahan Siswa_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
-
 }
-$dompdf->stream($filename, ["Attachment" => 1]);
+$dompdf->stream($filename, ["Attachment" => 0]);
 
 exit(0);
