@@ -293,12 +293,20 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 triggerStudentSearch();
             }
 
+            // Normalisasi nomor jika ada (diawali 08)
+            let formattedPhone = phone ? phone.toString().replace(/[^0-9]/g, '') : '';
+            if (formattedPhone.startsWith('62')) {
+                formattedPhone = '0' + formattedPhone.slice(2);
+            } else if (formattedPhone.startsWith('8')) {
+                formattedPhone = '0' + formattedPhone;
+            }
+
             const row = `
             <div class="row student-row-group" id="student-row-${currentId}">
                 <div class="col-md-1 d-flex align-items-center justify-content-center"><strong class="text-primary fs-5"></strong>${id !== null ? `<input type="hidden" name="siswa[${id}][id]" value="${id}">` : ''}</div>
                 <div class="col-md-3"><label class="form-label">Nama Siswa</label><input type="text" class="form-control" name="siswa[${currentId}][nama]" value="${name}" required></div>
                 <div class="col-md-4"><label class="form-label">Kelas</label><input type="text" class="form-control" name="siswa[${currentId}][kelas]" value="${className}" required></div>
-                <div class="col-md-3"><label class="form-label">No. Handphone</label><input type="text" class="form-control" name="siswa[${currentId}][hp]" value="${phone}" required></div>
+                <div class="col-md-3"><label class="form-label">No. Handphone</label><input type="tel" class="form-control" name="siswa[${currentId}][hp]" value="${formattedPhone}" placeholder="08xxxxxxxxxx" pattern="^08[0-9]{8,13}$" title="Nomor handphone harus diawali 08 (10-15 digit)" required></div>
                 <div class="col-md-1 d-flex align-items-center justify-content-center"><button type="button" class="btn btn-sm btn-danger remove-custom-btn" data-id="${currentId}"><i class="fas fa-times"></i></button></div>
             </div>`;
 

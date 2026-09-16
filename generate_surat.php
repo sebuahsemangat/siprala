@@ -66,6 +66,26 @@ $data_perusahaan = [
     'kota_tujuan' => $_POST['kota_perusahaan'] ?? 'KOTA',
 ];
 
+// **FUNGSI UNTUK NORMALISASI NOMOR HANDPHONE (DIAWALI 08)**
+function formatNomorHP($hp)
+{
+    // Bersihkan karakter selain angka
+    $clean = preg_replace('/[^0-9]/', '', (string)$hp);
+    if (empty($clean)) {
+        return '';
+    }
+
+    // Jika diawali 628, ganti jadi 08
+    if (strpos($clean, '62') === 0) {
+        $clean = '0' . substr($clean, 2);
+    } elseif (strpos($clean, '8') === 0) {
+        // Jika diawali 8 langsung, tambahkan 0
+        $clean = '0' . $clean;
+    }
+
+    return $clean;
+}
+
 // Data Siswa (Diproses dari array dinamis)
 // Structure: $_POST['siswa'][id_siswa][nama/kelas/hp]
 $data_siswa_raw = $_POST['siswa'] ?? [];
@@ -74,10 +94,11 @@ $id_siswa_list = []; // List untuk INSERT ke siswa_surat
 
 foreach ($data_siswa_raw as $id_siswa => $siswa) {
     if (is_array($siswa) && !empty($siswa['nama']) && !empty($siswa['kelas']) && !empty($siswa['hp'])) {
+        $hp_formatted = formatNomorHP($siswa['hp']);
         $data_siswa[] = [
             'nama' => htmlspecialchars($siswa['nama']),
             'kelas' => htmlspecialchars($siswa['kelas']),
-            'hp' => htmlspecialchars($siswa['hp']),
+            'hp' => htmlspecialchars($hp_formatted ?: $siswa['hp']),
         ];
         // Tambahkan id_siswa ke list untuk INSERT ke DB
         $id_siswa_list[] = intval($id_siswa);
@@ -154,6 +175,28 @@ try {
         }
     }
     $stmt->close();
+
+    // 4. Sinkronisasi / Update Nomor Handphone ke tabel 'siswa'
+    $stmt_update_kontak = $koneksi->prepare("
+        UPDATE siswa 
+        SET kontak_siswa = ? 
+        WHERE id_siswa = ? 
+          AND (kontak_siswa IS NULL OR kontak_siswa = '' OR kontak_siswa != ?)
+    ");
+
+    if ($stmt_update_kontak) {
+        foreach ($data_siswa_raw as $id_siswa_key => $siswa_item) {
+            $id_siswa_val = intval($id_siswa_key);
+            if ($id_siswa_val > 0 && !empty($siswa_item['hp'])) {
+                $formatted_hp = formatNomorHP($siswa_item['hp']);
+                if (!empty($formatted_hp) && strpos($formatted_hp, '08') === 0) {
+                    $stmt_update_kontak->bind_param("sis", $formatted_hp, $id_siswa_val, $formatted_hp);
+                    $stmt_update_kontak->execute();
+                }
+            }
+        }
+        $stmt_update_kontak->close();
+    }
 } catch (Exception $e) {
     // Handle error (misalnya koneksi gagal, nomor surat duplikat)
     $koneksi->close();
