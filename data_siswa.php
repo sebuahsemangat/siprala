@@ -12,6 +12,8 @@ $query_siswa = "
         s.kelas, 
         s.kontak_siswa, 
         s.id_tempat,
+        s.id_pembimbing,
+        p.nama_pembimbing,
         tp.nama_tempat,
         -- Subquery untuk mengambil status terakhir (yang paling baru)
         (
@@ -23,6 +25,8 @@ $query_siswa = "
         ) AS status_pengajuan_terakhir
     FROM 
         siswa s
+    LEFT JOIN 
+        pembimbing p ON s.id_pembimbing = p.id_pembimbing
     LEFT JOIN 
         tempat_pkl tp ON s.id_tempat = tp.id_tempat
     ORDER BY 
@@ -65,8 +69,10 @@ $koneksi->close();
                         <th style="width: 80px;">NIS</th>
                         <th>Nama Siswa</th>
                         <th style="width: 100px;">Kelas</th>
-                        <th style="width: 150px;">Kontak Siswa</th>
-                        <th style="width: 80px;">Penempatan PKL</th> <th style="width: 150px;" class="text-center">Aksi</th>
+                        <th style="width: 140px;">Kontak Siswa</th>
+                        <th style="width: 180px;">Pembimbing</th>
+                        <th style="width: 140px;">Penempatan PKL</th>
+                        <th style="width: 100px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,7 +84,15 @@ $koneksi->close();
                             <td><strong><?php echo htmlspecialchars($siswa['nama_siswa']); ?></strong></td>
                             <td><?php echo htmlspecialchars($siswa['kelas']); ?></td>
                             <td><?php echo htmlspecialchars($siswa['kontak_siswa']); ?></td>
-                            
+                            <td>
+                                <?php 
+                                    if (!empty($siswa['nama_pembimbing'])) {
+                                        echo htmlspecialchars($siswa['nama_pembimbing']);
+                                    } else {
+                                        echo '<span class="text-muted fst-italic small">Belum Ditentukan</span>';
+                                    }
+                                ?>
+                            </td>
                             <td>
                                 <?php 
                                     $status_display = '<span class="badge bg-secondary">Belum Diajukan</span>';
@@ -135,11 +149,11 @@ $koneksi->close();
             "columnDefs": [{
                     "orderable": false,
                     "searchable": false,
-                    "targets": [6] // Kolom No (0), Status Penempatan (5), dan Aksi (6) non-sortable/searchable
+                    "targets": [7] // Kolom Aksi (7) non-sortable/searchable
                 },
                 {
                     "className": "text-center",
-                    "targets": [0, 6]
+                    "targets": [0, 7]
                 }
             ],
             // Bahasa Indonesia
@@ -154,7 +168,7 @@ $koneksi->close();
                 titleAttr: 'Export Data ke Excel',
                 className: 'btn btn-success',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5] // Export semua kolom data (termasuk status baru)
+                    columns: [0, 1, 2, 3, 4, 5, 6] // Export semua kolom data (termasuk pembimbing dan status)
                 },
                 title: 'Data Siswa PKL SMK Informatika Sumedang',
                 filename: 'Data_Siswa_PKL_' + new Date().toISOString().slice(0, 10)
