@@ -4,14 +4,15 @@ include 'koneksi.php';
 
 header('Content-Type: application/json');
 
-// Perbaikan: Hapus t.alamat dan t.kota jika kolom tersebut tidak ada di tabel tempat_pkl
 $query = "
     SELECT 
         s.id_surat, 
         s.no_surat,
         s.tanggal, 
         t.id_tempat, 
-        t.nama_tempat
+        t.nama_tempat,
+        t.alamat,
+        t.kota
     FROM surat s
     JOIN tempat_pkl t ON s.id_tempat_pkl = t.id_tempat
     WHERE s.perihal LIKE '%Pengajuan Tempat%' 

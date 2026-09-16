@@ -8,4 +8,6 @@ $baseDir = dirname($vendorDir);
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'Dompdf\\Cpdf' => $vendorDir . '/dompdf/dompdf/lib/Cpdf.php',
+    'Shuchkin\\SimpleXLSX' => $vendorDir . '/shuchkin/simplexlsx/src/SimpleXLSX.php',
+    'Shuchkin\\SimpleXLSXGen' => $vendorDir . '/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php',
 );

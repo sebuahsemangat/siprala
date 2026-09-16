@@ -7,12 +7,14 @@ $id_surat_ref = isset($_GET['id_surat_ref']) ? intval($_GET['id_surat_ref']) : 0
 $ref_no_surat = '';
 $ref_tanggal = '';
 $ref_nama_tempat = '';
+$ref_alamat = '';
+$ref_kota = '';
 $ref_id_tempat = 0;
 $siswa_list = [];
 
 if ($id_surat_ref > 0) {
     // Ambil data surat dan tempat PKL
-    $query_surat = "SELECT s.no_surat, s.tanggal, s.id_tempat_pkl, t.nama_tempat 
+    $query_surat = "SELECT s.no_surat, s.tanggal, s.id_tempat_pkl, t.nama_tempat, t.alamat, t.kota 
                     FROM surat s 
                     LEFT JOIN tempat_pkl t ON s.id_tempat_pkl = t.id_tempat 
                     WHERE s.id_surat = $id_surat_ref";
@@ -23,6 +25,8 @@ if ($id_surat_ref > 0) {
         $ref_tanggal = $data_surat['tanggal'];
         $ref_id_tempat = $data_surat['id_tempat_pkl'];
         $ref_nama_tempat = $data_surat['nama_tempat'];
+        $ref_alamat = $data_surat['alamat'] ?? '';
+        $ref_kota = $data_surat['kota'] ?? '';
         
         // Ambil data siswa yang terlampir pada surat tersebut
         $query_siswa = "SELECT s.id_siswa, s.nis, s.nama_siswa, s.kelas 
@@ -112,11 +116,11 @@ $koneksi->close();
                 </div>
                 <div class="mb-3">
                     <label for="alamat_perusahaan" class="form-label">Alamat Tempat PKL</label>
-                    <textarea class="form-control" id="alamat_perusahaan" name="alamat_perusahaan" rows="2" placeholder="Masukkan alamat lengkap tempat PKL" required></textarea>
+                    <textarea class="form-control" id="alamat_perusahaan" name="alamat_perusahaan" rows="2" placeholder="Masukkan alamat lengkap tempat PKL" required><?php echo htmlspecialchars($ref_alamat ?? ''); ?></textarea>
                 </div>
                 <div class="mb-3">
                     <label for="kota_perusahaan" class="form-label">Kota Tujuan Surat</label>
-                    <input type="text" class="form-control" id="kota_perusahaan" name="kota_perusahaan" placeholder="Contoh: Sumedang" required>
+                    <input type="text" class="form-control" id="kota_perusahaan" name="kota_perusahaan" value="<?php echo htmlspecialchars($ref_kota ?? ''); ?>" placeholder="Contoh: Sumedang" required>
                 </div>
             </fieldset>
 

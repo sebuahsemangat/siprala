@@ -45,9 +45,15 @@ $koneksi->close();
     </div>
     <div class="card-body container-form">
 
-        <div class="mb-4">
+        <div class="d-flex flex-wrap gap-2 mb-4">
             <a href="#" id="tambahSiswaBtn" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i> Tambah Siswa Baru
+            </a>
+            <button type="button" class="btn btn-success text-white" data-bs-toggle="modal" data-bs-target="#importSiswaModal">
+                <i class="fas fa-file-excel me-2"></i> Import Siswa
+            </button>
+            <a href="download_template_siswa.php" class="btn btn-outline-success">
+                <i class="fas fa-download me-2"></i> Download Template
             </a>
         </div>
 
@@ -184,5 +190,142 @@ $koneksi->close();
                 // Implementasi AJAX call untuk penghapusan
             }
         });
+
+        // Event handler: preview nama file saat dipilih
+        $('#fileExcelInput').on('change', function() {
+            const file = this.files[0];
+            if (file) {
+                $('#fileNameDisplay').text(file.name);
+                $('#importAlert').addClass('d-none');
+            } else {
+                $('#fileNameDisplay').text('Belum ada file dipilih...');
+            }
+        });
+
+        // Event handler: Submit form import siswa
+        $('#formImportSiswa').on('submit', function(e) {
+            e.preventDefault();
+
+            const fileInput = $('#fileExcelInput')[0];
+            if (!fileInput.files.length) {
+                showImportAlert('danger', 'Silakan pilih file Excel (.xlsx) terlebih dahulu.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file_excel', fileInput.files[0]);
+
+            const submitBtn = $('#btnSubmitImport');
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Memproses...');
+
+            $.ajax({
+                url: 'ajax/import_siswa.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        showImportAlert('success', '<i class="fas fa-check-circle me-2"></i>' + response.message);
+                        // Reset form
+                        fileInput.value = '';
+                        $('#fileNameDisplay').text('Belum ada file dipilih...');
+                        // Reload table data setelah sukses
+                        setTimeout(function() {
+                            $('#importSiswaModal').modal('hide');
+                            loadContent('data_siswa.php');
+                        }, 2000);
+                    } else {
+                        showImportAlert('danger', '<i class="fas fa-times-circle me-2"></i>' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    let msg = 'Terjadi kesalahan saat menghubungi server.';
+                    try {
+                        const resp = JSON.parse(xhr.responseText);
+                        if (resp.message) msg = resp.message;
+                    } catch (e) {}
+                    showImportAlert('danger', '<i class="fas fa-times-circle me-2"></i>' + msg);
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-upload me-2"></i> Import Sekarang');
+                }
+            });
+        });
+
+        // Reset modal saat ditutup
+        $('#importSiswaModal').on('hidden.bs.modal', function() {
+            $('#fileExcelInput').val('');
+            $('#fileNameDisplay').text('Belum ada file dipilih...');
+            $('#importAlert').addClass('d-none').html('');
+        });
+
+        function showImportAlert(type, message) {
+            $('#importAlert')
+                .removeClass('d-none alert-success alert-danger alert-warning alert-info')
+                .addClass('alert-' + type)
+                .html(message);
+        }
     });
 </script>
+
+<!-- Modal Import Siswa -->
+<div class="modal fade" id="importSiswaModal" tabindex="-1" aria-labelledby="importSiswaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="importSiswaModalLabel">
+                    <i class="fas fa-file-excel me-2"></i> Import Data Siswa dari Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formImportSiswa" enctype="multipart/form-data">
+                <div class="modal-body">
+
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
+                        <i class="fas fa-info-circle mt-1 flex-shrink-0"></i>
+                        <div>
+                            <strong>Petunjuk Import:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li>File harus berformat <strong>.xlsx</strong> (Excel).</li>
+                                <li>Kolom yang diperlukan: <strong>NIS, Nama Siswa, Kelas, Kontak Siswa</strong>.</li>
+                                <li>Baris pertama akan dianggap sebagai <strong>header</strong> dan dilewati.</li>
+                                <li>Jika NIS sudah ada, data siswa akan <strong>diperbarui</strong>.</li>
+                                <li>Siswa baru akan mendapatkan password default berupa <strong>NIS-nya</strong>.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">File Excel (.xlsx)</label>
+                        <div class="input-group">
+                            <label class="input-group-text btn btn-outline-success" for="fileExcelInput" style="cursor:pointer;">
+                                <i class="fas fa-folder-open me-2"></i> Pilih File
+                            </label>
+                            <span class="form-control text-muted" id="fileNameDisplay">Belum ada file dipilih...</span>
+                        </div>
+                        <input type="file" id="fileExcelInput" name="file_excel" accept=".xlsx" class="d-none">
+                        <div class="form-text">Hanya file .xlsx yang diterima. Maksimal ukuran file 10MB.</div>
+                    </div>
+
+                    <div id="importAlert" class="alert d-none" role="alert"></div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="download_template_siswa.php" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-download me-1"></i> Download Template Excel
+                        </a>
+                        <span class="text-muted small">Gunakan template ini agar format sesuai</span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success" id="btnSubmitImport">
+                        <i class="fas fa-upload me-2"></i> Import Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,7 +1,15 @@
 <?php
 // index.php - Halaman Utama Dashboard dengan Sidebar
-// Include file koneksi (diperlukan jika ada logika PHP yang berjalan di sini)
-// include 'koneksi.php'; 
+session_start();
+
+// Cek autentikasi: jika belum login, redirect ke halaman login
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$adminNama = htmlspecialchars($_SESSION['admin_nama'] ?? 'Admin');
+$adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -59,10 +67,12 @@
                     </span>
                     <div class="dropdown ms-auto">
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user"></i> Admin
+                            <i class="fas fa-user me-1"></i> <?= $adminNama ?>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                            <li><span class="dropdown-item-text text-muted small"><?= $adminUsername ?></span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                         </ul>
                     </div>
                 </div>

@@ -97,7 +97,10 @@ $id_surat = null;
 
 try {
     // 1. Cek atau INSERT Tempat PKL Baru
-    $stmt = $koneksi->prepare("SELECT id_tempat FROM tempat_pkl WHERE nama_tempat = ?");
+    $alamat_perusahaan_db = trim($_POST['alamat_perusahaan'] ?? '');
+    $kota_perusahaan_db = trim($_POST['kota_perusahaan'] ?? '');
+
+    $stmt = $koneksi->prepare("SELECT id_tempat, alamat, kota FROM tempat_pkl WHERE nama_tempat = ?");
     $stmt->bind_param("s", $nama_perusahaan_db);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -106,10 +109,20 @@ try {
         // Tempat PKL sudah ada
         $row = $result->fetch_assoc();
         $id_tempat_pkl = $row['id_tempat'];
+
+        // Jika alamat atau kota di database masih kosong tapi di form diisi, update data
+        if ((empty($row['alamat']) && !empty($alamat_perusahaan_db)) || (empty($row['kota']) && !empty($kota_perusahaan_db))) {
+            $update_alamat = !empty($row['alamat']) ? $row['alamat'] : $alamat_perusahaan_db;
+            $update_kota = !empty($row['kota']) ? $row['kota'] : $kota_perusahaan_db;
+            $stmt_update = $koneksi->prepare("UPDATE tempat_pkl SET alamat = ?, kota = ? WHERE id_tempat = ?");
+            $stmt_update->bind_param("ssi", $update_alamat, $update_kota, $id_tempat_pkl);
+            $stmt_update->execute();
+            $stmt_update->close();
+        }
     } else {
         // Tempat PKL BARU: INSERT dan dapatkan ID-nya
-        $stmt_insert = $koneksi->prepare("INSERT INTO tempat_pkl (nama_tempat) VALUES (?)");
-        $stmt_insert->bind_param("s", $nama_perusahaan_db);
+        $stmt_insert = $koneksi->prepare("INSERT INTO tempat_pkl (nama_tempat, alamat, kota) VALUES (?, ?, ?)");
+        $stmt_insert->bind_param("sss", $nama_perusahaan_db, $alamat_perusahaan_db, $kota_perusahaan_db);
         $stmt_insert->execute();
         $id_tempat_pkl = $koneksi->insert_id;
         $stmt_insert->close();
@@ -157,7 +170,8 @@ $koneksi->close();
 
 // 4. Set Dompdf Options
 $options = new Options();
-$options->set('defaultFont', 'Times New Roman');
+$options->set('defaultFont', 'Calibri');
+$options->set('defaultFontSize', 12); // Sesuai font-size 12pt di template surat
 $options->set('isHtml5ParserEnabled', true);
 $options->set('isRemoteEnabled', true);
 
@@ -181,9 +195,8 @@ $dompdf->render();
 
 // 7. Output PDF
 if ($data_pengajuan['perihal'] == "Pengajuan Tempat Praktik Kerja Lapangan (PKL)") {
-$filename = "Surat_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
-}
-else {
+    $filename = "Surat_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
+} else {
     $filename = "Surat_Penambahan Siswa_PKL_" . date('Ymd') . "_" . str_replace(' ', '_', $nama_perusahaan_db) . ".pdf";
 
 }

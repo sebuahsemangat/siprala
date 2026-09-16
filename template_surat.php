@@ -22,8 +22,8 @@ function make_address_row($data)
         }
 
         body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 11pt;
+            font-family: 'Calibri', Times, serif;
+            font-size: 12pt;
         }
 
         /* --- HEADER (KOP SURAT) --- */
@@ -191,11 +191,14 @@ function make_address_row($data)
 
     <div class="tanda-tangan">
         <p>Sumedang, <?php echo $data_pengajuan['tanggal_surat']; ?></p>
-        <p>Kepala Sekolah,</p>
-        <div style="height: 60px;">
-            <img src="<?php echo $data_sekolah['ttd']; ?>" alt="Tanda Tangan Kepala Sekolah" style="max-height: 50px;">
+        <div style="position: relative; display: inline-block; line-height: 1.6; text-align: center; min-width: 200px;">
+            <p style="margin: 0;">Kepala Sekolah,</p>
+            <img src="<?php echo $data_sekolah['ttd']; ?>" alt="Tanda Tangan Kepala Sekolah"
+                style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); max-height: 130px; z-index: 1; pointer-events: none;">
+            <div style="margin-top: 110px;">
+                <strong><?php echo $data_sekolah['kepala_sekolah']; ?></strong>
+            </div>
         </div>
-        <p><strong><?php echo $data_sekolah['kepala_sekolah']; ?></strong></p>
     </div>
 
 
@@ -249,11 +252,15 @@ function make_address_row($data)
 
         <div class="tanda-tangan">
             <p>Sumedang, <?php echo $data_pengajuan['tanggal_surat']; ?></p>
-            <p>Kepala Sekolah,</p>
-            <div style="height: 60px;">
-            <img src="<?php echo $data_sekolah['ttd']; ?>" alt="Tanda Tangan Kepala Sekolah" style="max-height: 50px;">
-        </div>
-        <p><strong><?php echo $data_sekolah['kepala_sekolah']; ?></strong></p>
+            <div
+                style="position: relative; display: inline-block; line-height: 1.6; text-align: center; min-width: 200px;">
+                <p style="margin: 0;">Kepala Sekolah,</p>
+                <img src="<?php echo $data_sekolah['ttd']; ?>" alt="Tanda Tangan Kepala Sekolah"
+                    style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); max-height: 130px; z-index: 1; pointer-events: none;">
+                <div style="margin-top: 110px;">
+                    <strong><?php echo $data_sekolah['kepala_sekolah']; ?></strong>
+                </div>
+            </div>
         </div>
 
 </body>

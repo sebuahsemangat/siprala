@@ -49,15 +49,29 @@ $nama_perusahaan = $_POST['nama_perusahaan'] ?? '';
 $id_tempat_pkl = $_POST['id_tempat_pkl'] ?? 0;
 
 // Ambil info lengkap perusahaan dari DB jika perlu, atau gunakan yang dari form
+$alamat_perusahaan = trim($_POST['alamat_perusahaan'] ?? '');
+$kota_perusahaan = trim($_POST['kota_perusahaan'] ?? '');
+
 $query_tempat = "SELECT * FROM tempat_pkl WHERE id_tempat = $id_tempat_pkl";
 $res_tempat = $koneksi->query($query_tempat);
-$data_t = $res_tempat->fetch_assoc();
+$data_t = $res_tempat ? $res_tempat->fetch_assoc() : null;
+
+if ($id_tempat_pkl > 0 && $data_t) {
+    if ((empty($data_t['alamat']) && !empty($alamat_perusahaan)) || (empty($data_t['kota']) && !empty($kota_perusahaan))) {
+        $update_alamat = !empty($data_t['alamat']) ? $data_t['alamat'] : $alamat_perusahaan;
+        $update_kota = !empty($data_t['kota']) ? $data_t['kota'] : $kota_perusahaan;
+        $stmt_up = $koneksi->prepare("UPDATE tempat_pkl SET alamat = ?, kota = ? WHERE id_tempat = ?");
+        $stmt_up->bind_param("ssi", $update_alamat, $update_kota, $id_tempat_pkl);
+        $stmt_up->execute();
+        $stmt_up->close();
+    }
+}
 
 $data_perusahaan = [
     'tujuan' => $nama_perusahaan,
     'yth' => 'Pimpinan',
-    'alamat_tujuan' => $_POST['alamat_perusahaan'] ?? 'Alamat Perusahaan',
-    'kota_tujuan' => $_POST['kota_perusahaan'] ?? 'Kota',
+    'alamat_tujuan' => !empty($alamat_perusahaan) ? $alamat_perusahaan : ($data_t['alamat'] ?? 'Alamat Perusahaan'),
+    'kota_tujuan' => !empty($kota_perusahaan) ? $kota_perusahaan : ($data_t['kota'] ?? 'Kota'),
 ];
 
 // Data Siswa yang dibatalkan
@@ -119,7 +133,8 @@ $koneksi->close();
 
 // Generate PDF
 $options = new Options();
-$options->set('defaultFont', 'Times New Roman');
+$options->set('defaultFont', 'Calibri');
+$options->set('defaultFontSize', 12); // Sesuai font-size 12pt di template surat
 $options->set('isHtml5ParserEnabled', true);
 $options->set('isRemoteEnabled', true);
 

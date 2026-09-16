@@ -8,6 +8,8 @@ $query_tempat = "
     SELECT 
         tp.id_tempat, 
         tp.nama_tempat, 
+        tp.alamat,
+        tp.kota,
         tp.id_pembimbing,
         p.nama_pembimbing,
         COUNT(s.id_siswa) AS jumlah_siswa
@@ -18,7 +20,7 @@ $query_tempat = "
     LEFT JOIN 
         siswa s ON tp.id_tempat = s.id_tempat
     GROUP BY
-        tp.id_tempat, tp.nama_tempat, tp.id_pembimbing, p.nama_pembimbing
+        tp.id_tempat, tp.nama_tempat, tp.alamat, tp.kota, tp.id_pembimbing, p.nama_pembimbing
     ORDER BY 
         tp.nama_tempat ASC
 ";
@@ -58,6 +60,8 @@ $koneksi->close();
                     <tr>
                         <th style="width: 50px;">No.</th>
                         <th>Nama Tempat PKL</th>
+                        <th style="width: 180px;">Alamat</th>
+                        <th style="width: 180px;">Kota</th>
                         <th style="width: 180px;">Nama Pembimbing</th>
                         <th style="width: 150px;">Jumlah Siswa</th>
                         <th style="width: 150px;" class="text-center">Aksi</th>
@@ -68,11 +72,21 @@ $koneksi->close();
                     foreach ($data_tempat as $tempat): ?>
                         <tr>
                             <td class="text-center"><?php echo $no++; ?></td>
-                            <td><strong><?php echo htmlspecialchars($tempat['nama_tempat']); ?></strong></td>
+                            <td><strong><?php echo htmlspecialchars($tempat['nama_tempat'] ?? ''); ?></strong></td>
+                            <td><?php if (empty($tempat['alamat']))
+                                echo '-';
+                            else
+                                echo htmlspecialchars($tempat['alamat'] ?? ''); ?>
+                            </td>
+                            <td><?php if (empty($tempat['kota']))
+                                echo '-';
+                            else
+                                echo htmlspecialchars($tempat['kota'] ?? ''); ?>
+                            </td>
                             <td>
                                 <?php
                                 if ($tempat['id_pembimbing'] != 0 && !empty($tempat['nama_pembimbing'])) {
-                                    echo htmlspecialchars($tempat['nama_pembimbing']);
+                                    echo htmlspecialchars($tempat['nama_pembimbing'] ?? '');
                                 } else {
                                     echo '-';
                                 }
@@ -92,10 +106,24 @@ $koneksi->close();
                                     <button class="btn btn-sm btn-info text-white" data-bs-toggle="modal"
                                         data-bs-target="#tugaskanPembimbingModal"
                                         data-id="<?php echo $tempat['id_tempat']; ?>"
-                                        data-tempat="<?php echo htmlspecialchars($tempat['nama_tempat']); ?>"
+                                        data-tempat="<?php echo htmlspecialchars($tempat['nama_tempat'] ?? ''); ?>"
                                         data-pembimbing-id="<?php echo $tempat['id_pembimbing']; ?>"
                                         title="Tugaskan/Ubah Pembimbing">
                                         <i class="fas fa-user-tie me-1"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning text-white" data-bs-toggle="modal"
+                                        data-bs-target="#editTempatPklModal" data-id="<?php echo $tempat['id_tempat']; ?>"
+                                        data-tempat="<?php echo htmlspecialchars($tempat['nama_tempat'] ?? ''); ?>"
+                                        data-alamat="<?php echo htmlspecialchars($tempat['alamat'] ?? ''); ?>"
+                                        data-kota="<?php echo htmlspecialchars($tempat['kota'] ?? ''); ?>"
+                                        title="Edit Tempat PKL">
+                                        <i class="fas fa-edit me-1"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger text-white" data-bs-toggle="modal"
+                                        data-bs-target="#hapusTempatPklModal" data-id="<?php echo $tempat['id_tempat']; ?>"
+                                        data-tempat="<?php echo htmlspecialchars($tempat['nama_tempat'] ?? ''); ?>"
+                                        title="Hapus Tempat PKL">
+                                        <i class="fas fa-trash me-1"></i>
                                     </button>
                                 </div>
                             </td>
@@ -130,7 +158,7 @@ $koneksi->close();
                             <option value="0">-- Belum Ditugaskan --</option>
                             <?php foreach ($data_pembimbing as $pembimbing): ?>
                                 <option value="<?php echo $pembimbing['id_pembimbing']; ?>">
-                                    <?php echo htmlspecialchars($pembimbing['nama_pembimbing']); ?>
+                                    <?php echo htmlspecialchars($pembimbing['nama_pembimbing'] ?? ''); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -139,6 +167,46 @@ $koneksi->close();
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary" id="btnTugaskan">Tugaskan Pembimbing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Tempat PKL -->
+<div class="modal fade" id="editTempatPklModal" tabindex="-1" aria-labelledby="editTempatPklModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="editTempatPklModalLabel"><i class="fas fa-edit me-2"></i>Edit Tempat PKL
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form id="formEditTempatPkl">
+                <div class="modal-body">
+                    <input type="hidden" id="edit_id_tempat" name="id_tempat">
+                    <div class="mb-3">
+                        <label for="edit_nama_tempat" class="form-label">Nama Tempat PKL <span
+                                class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="edit_nama_tempat" name="nama_tempat" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_alamat" class="form-label">Alamat</label>
+                        <textarea class="form-control" id="edit_alamat" name="alamat" rows="3"
+                            placeholder="Masukkan alamat tempat PKL..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_kota" class="form-label">Kota</label>
+                        <input type="text" class="form-control" id="edit_kota" name="kota"
+                            placeholder="Contoh: Sumedang">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning text-white" id="btnSimpanEdit">Simpan
+                        Perubahan</button>
                 </div>
             </form>
         </div>
@@ -198,7 +266,7 @@ $koneksi->close();
             modal.find('#modal_id_pembimbing').val(pembimbing_id); // Memilih pembimbing yang sudah ada
         });
 
-        // Event handler untuk submit form penugasan pembimbing (Masih Dummy)
+        // Event handler untuk submit form penugasan pembimbing
         $('#formTugaskanPembimbing').on('submit', function (e) {
             e.preventDefault();
 
@@ -219,33 +287,76 @@ $koneksi->close();
                 },
                 dataType: 'json',
                 success: function (response) {
-                    // **PERBAIKAN KRITIS DIMULAI DI SINI**
-
-                    // 1. Tutup modal secara eksplisit sebelum alert/reload
                     $('#tugaskanPembimbingModal').modal('hide');
 
                     if (response.status === 'success') {
                         alert(response.message);
-                        // 2. Muat ulang konten setelah alert (Jika loadContent berhasil, aplikasi harus normal)
                         loadContent('data_tempat_pkl.php');
                     } else {
                         alert('Gagal: ' + response.message);
-                        // Jika gagal, hanya alert, lalu biarkan modal tertutup (langkah 1)
                     }
                 },
                 error: function (xhr, status, error) {
-                    // Tutup modal juga jika terjadi error AJAX
                     $('#tugaskanPembimbingModal').modal('hide');
                     console.error("AJAX Error:", status, error, xhr.responseText);
                     alert('Terjadi kesalahan saat menghubungi server: Silakan cek log atau detail error.');
                 },
                 complete: function () {
-                    // 3. Pastikan tombol diaktifkan kembali
                     submitBtn.prop('disabled', false).html('Tugaskan Pembimbing');
-                    // CATATAN: Hapus baris penutup modal di sini jika sudah dipindahkan ke 'success'/'error'
                 }
             });
         });
+
+        // Event handler untuk menampilkan data di modal Edit saat tombol diklik
+        $('#editTempatPklModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var id_tempat = button.data('id');
+            var nama_tempat = button.data('tempat');
+            var alamat = button.data('alamat') || '';
+            var kota = button.data('kota') || '';
+
+            var modal = $(this);
+            modal.find('#edit_id_tempat').val(id_tempat);
+            modal.find('#edit_nama_tempat').val(nama_tempat);
+            modal.find('#edit_alamat').val(alamat);
+            modal.find('#edit_kota').val(kota);
+        });
+
+        // Event handler untuk submit form Edit Tempat PKL
+        $('#formEditTempatPkl').on('submit', function (e) {
+            e.preventDefault();
+
+            const submitBtn = $('#btnSimpanEdit');
+            const originalText = submitBtn.html();
+
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...');
+
+            $.ajax({
+                url: 'ajax/edit_tempat_pkl.php',
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function (response) {
+                    $('#editTempatPklModal').modal('hide');
+
+                    if (response.status === 'success') {
+                        // alert(response.message);
+                        loadContent('data_tempat_pkl.php');
+                    } else {
+                        alert('Gagal: ' + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $('#editTempatPklModal').modal('hide');
+                    console.error("AJAX Error:", status, error, xhr.responseText);
+                    alert('Terjadi kesalahan saat menghubungi server: Silakan cek log atau detail error.');
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+
         // Event handler untuk tombol Tambah (Dummy)
         $('#tambahTempatBtn').on('click', function (e) {
             e.preventDefault();

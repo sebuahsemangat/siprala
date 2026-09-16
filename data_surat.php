@@ -63,14 +63,18 @@ $koneksi->close();
                             </td>
                             <td>
                                 <div class="btn-action-group" aria-label="Aksi Surat">
-                                    <button class="btn btn-sm btn-danger batal-btn"
-                                        data-id="<?php echo $surat['id_surat']; ?>" title="Ajukan Pembatalan">
-                                        Ajukan Pembatalan
-                                    </button>
-                                    <button class="btn btn-sm btn-warning edit-btn"
-                                        data-id="<?php echo $surat['id_surat']; ?>" title="Input Balasan">
-                                        Input Balasan
-                                    </button>
+                                    <?php if ($surat['perihal'] != 'Pemberitahuan Pembatalan Siswa Praktik Kerja Lapangan (PKL)'): ?>
+                                        <button class="btn btn-sm btn-danger batal-btn"
+                                            data-id="<?php echo $surat['id_surat']; ?>" title="Ajukan Pembatalan">
+                                            Ajukan Pembatalan
+                                        </button>
+                                    <?php endif; ?>
+                                    <?php if ($surat['perihal'] != 'Pemberitahuan Pembatalan Siswa Praktik Kerja Lapangan (PKL)'): ?>
+                                        <button class="btn btn-sm btn-warning edit-btn"
+                                            data-id="<?php echo $surat['id_surat']; ?>" title="Input Balasan">
+                                            Input Balasan
+                                        </button>
+                                    <?php endif; ?>
                                     <button class="btn btn-sm btn-danger delete-btn"
                                         data-id="<?php echo $surat['id_surat']; ?>"
                                         data-no-surat="<?php echo htmlspecialchars($surat['no_surat']); ?>" title="Hapus">
