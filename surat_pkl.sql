@@ -558,6 +558,10 @@ CREATE TABLE `surat` (
 CREATE TABLE `tempat_pkl` (
   `id_tempat` int NOT NULL,
   `nama_tempat` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alamat` text COLLATE utf8mb4_unicode_ci,
+  `kota` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `no_telepon` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `catatan` text COLLATE utf8mb4_unicode_ci,
   `id_pembimbing` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

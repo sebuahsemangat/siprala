@@ -10,6 +10,8 @@ $query_tempat = "
         tp.nama_tempat, 
         tp.alamat,
         tp.kota,
+        tp.no_telepon,
+        tp.catatan,
         tp.id_pembimbing,
         p.nama_pembimbing,
         COUNT(s.id_siswa) AS jumlah_siswa
@@ -20,7 +22,7 @@ $query_tempat = "
     LEFT JOIN 
         siswa s ON tp.id_tempat = s.id_tempat
     GROUP BY
-        tp.id_tempat, tp.nama_tempat, tp.alamat, tp.kota, tp.id_pembimbing, p.nama_pembimbing
+        tp.id_tempat, tp.nama_tempat, tp.alamat, tp.kota, tp.no_telepon, tp.catatan, tp.id_pembimbing, p.nama_pembimbing
     ORDER BY 
         tp.nama_tempat ASC
 ";
@@ -58,13 +60,15 @@ $koneksi->close();
             <table id="tempatPklTable" class="table table-hover align-middle" style="width:100%">
                 <thead>
                     <tr>
-                        <th style="width: 50px;">No.</th>
+                        <th style="width: 40px;">No.</th>
                         <th>Nama Tempat PKL</th>
-                        <th style="width: 180px;">Alamat</th>
-                        <th style="width: 180px;">Kota</th>
-                        <th style="width: 180px;">Nama Pembimbing</th>
-                        <th style="width: 150px;">Jumlah Siswa</th>
-                        <th style="width: 150px;" class="text-center">Aksi</th>
+                        <th style="width: 150px;">Alamat</th>
+                        <th style="width: 100px;">Kota</th>
+                        <th style="width: 120px;">No. Telepon</th>
+                        <th style="width: 150px;">Catatan</th>
+                        <th style="width: 150px;">Nama Pembimbing</th>
+                        <th style="width: 110px;">Jumlah Siswa</th>
+                        <th style="width: 130px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,6 +86,32 @@ $koneksi->close();
                                 echo '-';
                             else
                                 echo htmlspecialchars($tempat['kota'] ?? ''); ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($tempat['no_telepon'])): ?>
+                                    <?php echo htmlspecialchars($tempat['no_telepon']); ?>
+                                <?php else: ?>
+                                    <span class="text-muted fst-italic small">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($tempat['catatan'])): ?>
+                                    <?php 
+                                        $catatan_raw = $tempat['catatan'];
+                                        if (mb_strlen($catatan_raw) > 20): 
+                                            $catatan_short = mb_substr($catatan_raw, 0, 20);
+                                    ?>
+                                        <span class="catatan-wrapper">
+                                            <span class="catatan-short"><?php echo htmlspecialchars($catatan_short); ?>...</span>
+                                            <span class="catatan-full d-none"><?php echo nl2br(htmlspecialchars($catatan_raw)); ?></span>
+                                            <a href="javascript:void(0);" class="toggle-catatan text-primary text-decoration-none ms-1 small fw-semibold">Baca Selengkapnya</a>
+                                        </span>
+                                    <?php else: ?>
+                                        <span><?php echo nl2br(htmlspecialchars($catatan_raw)); ?></span>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-muted fst-italic small">-</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php
@@ -116,6 +146,8 @@ $koneksi->close();
                                         data-tempat="<?php echo htmlspecialchars($tempat['nama_tempat'] ?? ''); ?>"
                                         data-alamat="<?php echo htmlspecialchars($tempat['alamat'] ?? ''); ?>"
                                         data-kota="<?php echo htmlspecialchars($tempat['kota'] ?? ''); ?>"
+                                        data-telepon="<?php echo htmlspecialchars($tempat['no_telepon'] ?? ''); ?>"
+                                        data-catatan="<?php echo htmlspecialchars($tempat['catatan'] ?? ''); ?>"
                                         title="Edit Tempat PKL">
                                         <i class="fas fa-edit me-1"></i>
                                     </button>
@@ -202,6 +234,16 @@ $koneksi->close();
                         <input type="text" class="form-control" id="edit_kota" name="kota"
                             placeholder="Contoh: Sumedang">
                     </div>
+                    <div class="mb-3">
+                        <label for="edit_no_telepon" class="form-label">No. Telepon</label>
+                        <input type="tel" class="form-control" id="edit_no_telepon" name="no_telepon"
+                            placeholder="Contoh: (0261) 201234 atau 08123456789">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_catatan" class="form-label">Catatan</label>
+                        <textarea class="form-control" id="edit_catatan" name="catatan" rows="3"
+                            placeholder="Tambahkan catatan khusus terkait tempat PKL ini..."></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -223,11 +265,11 @@ $koneksi->close();
             "columnDefs": [{
                 "orderable": false,
                 "searchable": false,
-                "targets": [0, 4]
+                "targets": [0, 8]
             },
             {
                 "className": "text-center",
-                "targets": [0, 3, 4]
+                "targets": [0, 7, 8]
             }
             ],
             "language": {
@@ -240,7 +282,18 @@ $koneksi->close();
                 titleAttr: 'Export Data ke Excel',
                 className: 'btn btn-success',
                 exportOptions: {
-                    columns: [0, 1, 2, 3]
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    format: {
+                        body: function (data, row, column, node) {
+                            if (column === 5) {
+                                var full = $(node).find('.catatan-full');
+                                if (full.length) {
+                                    return full.text().trim();
+                                }
+                            }
+                            return $(node).text().trim();
+                        }
+                    }
                 },
                 title: 'Data Tempat PKL SMK Informatika Sumedang',
                 filename: 'Data_Tempat_PKL_' + new Date().toISOString().slice(0, 10)
@@ -251,6 +304,24 @@ $koneksi->close();
                 [10, 25, 50, "Semua"]
             ],
             "responsive": true
+        });
+
+        // Event handler: Toggle Baca Selengkapnya / Tutup pada Catatan
+        $('#tempatPklTable tbody').on('click', '.toggle-catatan', function (e) {
+            e.preventDefault();
+            var wrapper = $(this).closest('.catatan-wrapper');
+            var shortText = wrapper.find('.catatan-short');
+            var fullText = wrapper.find('.catatan-full');
+
+            if (fullText.hasClass('d-none')) {
+                shortText.addClass('d-none');
+                fullText.removeClass('d-none');
+                $(this).text('Tutup');
+            } else {
+                fullText.addClass('d-none');
+                shortText.removeClass('d-none');
+                $(this).text('Baca Selengkapnya');
+            }
         });
 
         // Event handler untuk menampilkan data di modal saat tombol diklik
@@ -314,12 +385,16 @@ $koneksi->close();
             var nama_tempat = button.data('tempat');
             var alamat = button.data('alamat') || '';
             var kota = button.data('kota') || '';
+            var telepon = button.data('telepon') || '';
+            var catatan = button.data('catatan') || '';
 
             var modal = $(this);
             modal.find('#edit_id_tempat').val(id_tempat);
             modal.find('#edit_nama_tempat').val(nama_tempat);
             modal.find('#edit_alamat').val(alamat);
             modal.find('#edit_kota').val(kota);
+            modal.find('#edit_no_telepon').val(telepon);
+            modal.find('#edit_catatan').val(catatan);
         });
 
         // Event handler untuk submit form Edit Tempat PKL
