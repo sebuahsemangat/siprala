@@ -146,6 +146,17 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                         required>
                     <datalist id="datalistOptions">
                     </datalist>
+
+                    <!-- Alert Catatan Tempat PKL -->
+                    <div id="alert_catatan_perusahaan" class="alert alert-warning mt-2 d-none" role="alert">
+                        <div class="d-flex">
+                            <i class="fas fa-exclamation-triangle mt-1 me-2 flex-shrink-0 text-warning"></i>
+                            <div>
+                                <strong class="d-block mb-1">Catatan Tempat PKL:</strong>
+                                <span id="isi_catatan_perusahaan" style="white-space: pre-line;"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="tujuan_departemen" class="form-label">Yth. Tujuan (Contoh:
@@ -258,10 +269,24 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
         }
         loadTempatPkl();
 
-        // Auto-fill alamat dan kota ketika nama_perusahaan dipilih dari datalist atau diketik
+        // Fungsi helper untuk update alert catatan perusahaan
+        function updateCatatanPerusahaan(catatanText) {
+            if (catatanText && catatanText.trim() !== '') {
+                $('#isi_catatan_perusahaan').text(catatanText.trim());
+                $('#alert_catatan_perusahaan').removeClass('d-none');
+            } else {
+                $('#alert_catatan_perusahaan').addClass('d-none');
+                $('#isi_catatan_perusahaan').text('');
+            }
+        }
+
+        // Auto-fill alamat, kota, dan catatan ketika nama_perusahaan dipilih dari datalist atau diketik
         $(document).on('input change', '#nama_perusahaan', function () {
             const val = $(this).val().trim();
-            if (!val) return;
+            if (!val) {
+                updateCatatanPerusahaan('');
+                return;
+            }
 
             const found = tempatPklList.find(function (item) {
                 return item.nama_tempat.toLowerCase() === val.toLowerCase();
@@ -274,6 +299,9 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 if (found.kota) {
                     $('#kota_perusahaan').val(found.kota);
                 }
+                updateCatatanPerusahaan(found.catatan);
+            } else {
+                updateCatatanPerusahaan('');
             }
         });
 
@@ -448,6 +476,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 data-nama="${item.nama_tempat}" 
                 data-alamat="${item.alamat || ''}" 
                 data-kota="${item.kota || ''}" 
+                data-catatan="${item.catatan || ''}"
                 data-tanggal="${item.tanggal}">
                 ${item.nama_tempat} (Surat: ${item.no_surat})
             </option>`);
@@ -499,7 +528,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 $('#val_tanggal_referensi').val(tanggalSurat);
 
                 // Auto fill nama perusahaan, alamat, dan kota
-                $('#nama_perusahaan').val(namaTempat);
+                $('#nama_perusahaan').val(namaTempat).trigger('change');
 
                 if (alamat) {
                     $('#alamat_perusahaan').val(alamat);
@@ -508,15 +537,16 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                     $('#kota_perusahaan').val(kota);
                 }
 
-                // Jika referensi surat tidak membawa alamat/kota, coba cari di tempatPklList
-                if (!alamat || !kota) {
-                    const found = tempatPklList.find(function (item) {
-                        return item.id_tempat == idTempat || item.nama_tempat.toLowerCase() === (namaTempat || '').toLowerCase();
-                    });
-                    if (found) {
-                        if (!alamat && found.alamat) $('#alamat_perusahaan').val(found.alamat);
-                        if (!kota && found.kota) $('#kota_perusahaan').val(found.kota);
-                    }
+                // Jika referensi surat tidak membawa alamat/kota/catatan, coba cari di tempatPklList
+                const found = tempatPklList.find(function (item) {
+                    return item.id_tempat == idTempat || item.nama_tempat.toLowerCase() === (namaTempat || '').toLowerCase();
+                });
+                if (found) {
+                    if (!alamat && found.alamat) $('#alamat_perusahaan').val(found.alamat);
+                    if (!kota && found.kota) $('#kota_perusahaan').val(found.kota);
+                    updateCatatanPerusahaan(selectedOption.data('catatan') || found.catatan);
+                } else if (selectedOption.data('catatan')) {
+                    updateCatatanPerusahaan(selectedOption.data('catatan'));
                 }
             } else {
                 // Kosongkan jika tidak ada yang dipilih
@@ -526,7 +556,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 $('#display_tanggal_referensi').val('');
                 $('#val_tanggal_referensi').val('');
 
-                $('#nama_perusahaan').val('');
+                $('#nama_perusahaan').val('').trigger('change');
                 $('#alamat_perusahaan').val('');
                 $('#kota_perusahaan').val('');
             }
