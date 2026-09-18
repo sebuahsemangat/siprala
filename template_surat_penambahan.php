@@ -22,7 +22,7 @@ function make_address_row($data)
         }
 
         body {
-            font-family: 'Calibri', Times, serif;
+            font-family: 'Calibri', sans-serif;
             font-size: 12pt;
         }
 
@@ -174,32 +174,38 @@ function make_address_row($data)
                 <br>
                 Dengan hormat,
                 <p style="text-align: justify; text-indent: 50px;">
-                    Berikut ini kami lampirkan penambahan nama siswa peserta PKL (Praktik Kerja Lapangan) dari surat kami terdahulu dengan nomor <?php echo $data_pengajuan['no_surat_referensi']; ?> tanggal <?php echo $data_pengajuan['tanggal_surat_referensi']; ?> di <?php echo $data_perusahaan['tujuan'];?> yang Bapak/Ibu pimpin dan akan dilaksanakan pada <strong><?php echo $data_pengajuan['tanggal_mulai_pkl']; ?> s.d.
-                        <?php echo $data_pengajuan['tanggal_selesai_pkl']; ?></strong>. Adapun tambahan siswa tersebut adalah:
-                        <table class="lampiran-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">No.</th>
-                    <th style="width: 35%;">Nama Siswa</th>
-                    <th style="width: 30%;">Kelas</th>
-                    <th style="width: 30%;">No. Handphone</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $no = 1;
-                foreach ($data_siswa as $siswa): ?>
-                    <tr>
-                        <td><?php echo $no++; ?></td>
-                        <td style="text-align: left;"><?php echo $siswa['nama']; ?></td>
-                        <td><?php echo $siswa['kelas']; ?></td>
-                        <td><?php echo $siswa['hp']; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-                    <br>
+                    Berikut ini kami lampirkan penambahan nama siswa peserta PKL (Praktik Kerja Lapangan) dari surat
+                    kami terdahulu dengan nomor <?php echo $data_pengajuan['no_surat_referensi']; ?> tanggal
+                    <?php echo $data_pengajuan['tanggal_surat_referensi']; ?> di
+                    <?php echo $data_perusahaan['tujuan']; ?> yang Bapak/Ibu pimpin dan akan dilaksanakan pada
+                    <strong><?php echo $data_pengajuan['tanggal_mulai_pkl']; ?> s.d.
+                        <?php echo $data_pengajuan['tanggal_selesai_pkl']; ?></strong>. Adapun tambahan siswa tersebut
+                    adalah:
+                <table class="lampiran-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">No.</th>
+                            <th style="width: 35%;">Nama Siswa</th>
+                            <th style="width: 30%;">Kelas</th>
+                            <th style="width: 30%;">No. Handphone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $no = 1;
+                        foreach ($data_siswa as $siswa): ?>
+                            <tr>
+                                <td><?php echo $no++; ?></td>
+                                <td style="text-align: left;"><?php echo $siswa['nama']; ?></td>
+                                <td><?php echo $siswa['kelas']; ?></td>
+                                <td><?php echo $siswa['hp']; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <br>
                 </p>
-                <p style="text-align: justify; text-indent: 50px;">Demikian surat lampiran ini, atas perhatian dan kerjasama Bapak/Ibu kami ucapkan terima kasih.</p>
+                <p style="text-align: justify; text-indent: 50px;">Demikian surat lampiran ini, atas perhatian dan
+                    kerjasama Bapak/Ibu kami ucapkan terima kasih.</p>
             </td>
         </tr>
     </table>

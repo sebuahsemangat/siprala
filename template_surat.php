@@ -22,7 +22,7 @@ function make_address_row($data)
         }
 
         body {
-            font-family: 'Calibri', Times, serif;
+            font-family: 'Calibri', sans-serif;
             font-size: 12pt;
         }
 

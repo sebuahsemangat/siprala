@@ -22,7 +22,7 @@ function make_address_row($data)
         }
 
         body {
-            font-family: 'Calibri', Times, serif;
+            font-family: 'Calibri', sans-serif;
             font-size: 12pt;
         }
 
@@ -174,32 +174,38 @@ function make_address_row($data)
                 <br>
                 Dengan hormat,
                 <p style="text-align: justify; text-indent: 50px;">
-                    Menindaklanjuti Surat Permohonan PKL dari kami dengan nomor <?php echo $data_pengajuan['no_surat_referensi']; ?> tanggal <?php echo $data_pengajuan['tanggal_surat_referensi']; ?> perihal Izin Praktik Kerja Lapangan (PKL) siswa SMK Informatika Sumedang di <?php echo $data_perusahaan['tujuan'];?>, siswa yang semula diterima di kantor Bapak/Ibu sebagai berikut:
-                        <table class="lampiran-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">No.</th>
-                    <th style="width: 35%;">Nama Siswa</th>
-                    <th style="width: 30%;">Kelas</th>
-                    <th style="width: 30%;">NIS</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $no = 1;
-                foreach ($data_siswa as $siswa): ?>
-                    <tr>
-                        <td><?php echo $no++; ?></td>
-                        <td style="text-align: left;"><?php echo $siswa['nama']; ?></td>
-                        <td><?php echo $siswa['kelas']; ?></td>
-                        <td><?php echo $siswa['nis']; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-                    <br>
-                    Siswa tersebut di atas dinyatakan <strong>mengundurkan diri dan dibatalkan</strong> mengikuti program Praktik Kerja Lapangan (PKL) di <?php echo $data_perusahaan['tujuan'];?>.
+                    Menindaklanjuti Surat Permohonan PKL dari kami dengan nomor
+                    <?php echo $data_pengajuan['no_surat_referensi']; ?> tanggal
+                    <?php echo $data_pengajuan['tanggal_surat_referensi']; ?> perihal Izin Praktik Kerja Lapangan (PKL)
+                    siswa SMK Informatika Sumedang di <?php echo $data_perusahaan['tujuan']; ?>, siswa yang semula
+                    diterima di kantor Bapak/Ibu sebagai berikut:
+                <table class="lampiran-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">No.</th>
+                            <th style="width: 35%;">Nama Siswa</th>
+                            <th style="width: 30%;">Kelas</th>
+                            <th style="width: 30%;">NIS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                                <?php $no = 1;
+                                foreach ($data_siswa as $siswa): ?>
+                            <tr>
+                                <td><?php echo $no++; ?></td>
+                                <td style="text-align: left;"><?php echo $siswa['nama']; ?></td>
+                                <td><?php echo $siswa['kelas']; ?></td>
+                                <td><?php echo $siswa['nis']; ?></td>
+                            </tr>
+                                <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <br>
+                Siswa tersebut di atas dinyatakan <strong>mengundurkan diri dan dibatalkan</strong> mengikuti program
+                Praktik Kerja Lapangan (PKL) di <?php echo $data_perusahaan['tujuan']; ?>.
                 </p>
-                <p style="text-align: justify; text-indent: 50px;">Demikian pemberitahuan ini, atas perhatian dan kerjasamanya kami sampaikan terima kasih.</p>
+                <p style="text-align: justify; text-indent: 50px;">Demikian pemberitahuan ini, atas perhatian dan
+                    kerjasamanya kami sampaikan terima kasih.</p>
             </td>
         </tr>
     </table>
