@@ -47,10 +47,17 @@ $koneksi->close();
                         <tr>
                             <td class="text-center"><?php echo $no++; ?></td>
                             <td><strong><?php echo htmlspecialchars($surat['no_surat']); ?></strong></td>
-                            <td><?php $perihal = htmlspecialchars($surat['perihal']);
-                            $singkat_perihal = explode(" ", $perihal);
-                            echo htmlspecialchars($singkat_perihal[0]);
-                            ?></td>
+                            <td>
+                                <?php
+                                if ($surat['perihal'] == 'Pengajuan Tempat Praktik Kerja Lapangan (PKL)') {
+                                    echo '<span class="badge bg-primary">Pengajuan</span>';
+                                } else if ($surat['perihal'] == 'Penambahan Siswa Praktik Kerja Lapangan (PKL)') {
+                                    echo '<span class="badge bg-warning">Penambahan</span>';
+                                } else if ($surat['perihal'] == 'Pemberitahuan Pembatalan Siswa Praktik Kerja Lapangan (PKL)') {
+                                    echo '<span class="badge bg-danger">Pembatalan</span>';
+                                }
+                                ?>
+                            </td>
                             <td><?php echo htmlspecialchars($surat['nama_tempat']); ?></td>
                             <td><?php echo date('d-m-Y', strtotime($surat['tanggal'])); ?></td>
                             <td>

@@ -50,8 +50,31 @@ if ($result_last_number && $result_last_number->num_rows > 0) {
 
 // 3. Hitung Nomor Surat Baru
 $nomor_urut_baru = $nomor_urut_terakhir + 1;
+
+// Bulan Romawi
+$bulan_angka = date('n');
+
+// Membuat array mapping angka ke Romawi
+$romawi = [
+    1 => 'I',
+    2 => 'II',
+    3 => 'III',
+    4 => 'IV',
+    5 => 'V',
+    6 => 'VI',
+    7 => 'VII',
+    8 => 'VIII',
+    9 => 'IX',
+    10 => 'X',
+    11 => 'XI',
+    12 => 'XII'
+];
+
+// Menampilkan bulan dalam format Romawi
+$bulan_romawi = $romawi[$bulan_angka];
+
 // Format: 001/PAN-PKL/SMK-IF/YPS/X/2025
-$nomor_surat_baru = sprintf('%03d', $nomor_urut_baru) . $format_nomor_surat;
+$nomor_surat_baru = sprintf('%03d', $nomor_urut_baru) . $format_nomor_surat . $bulan_romawi . "/" . date('Y');
 
 // 4. Ambil Tanggal Hari Ini dalam format YYYY-MM-DD
 $tanggal_hari_ini = date('Y-m-d');
@@ -207,11 +230,13 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
 </div>
 
 <!-- Modal Konfirmasi Sukses Generate Surat -->
-<div class="modal fade" id="modalSuksesSurat" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalSuksesSuratLabel" aria-hidden="true">
+<div class="modal fade" id="modalSuksesSurat" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="modalSuksesSuratLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="modalSuksesSuratLabel"><i class="fas fa-check-circle me-2"></i> Surat Berhasil Dibuat</h5>
+                <h5 class="modal-title" id="modalSuksesSuratLabel"><i class="fas fa-check-circle me-2"></i> Surat
+                    Berhasil Dibuat</h5>
             </div>
             <div class="modal-body text-center py-4">
                 <div class="mb-3 text-success">
@@ -220,7 +245,9 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 <h5 class="fw-bold mb-2">Surat Berhasil Dibuat dan Diarsipkan!</h5>
                 <p class="text-muted mb-2">Nomor Surat: <strong id="suksesNoSurat" class="text-dark"></strong></p>
                 <div class="alert alert-info py-2 px-3 small text-start">
-                    <i class="fas fa-info-circle me-1"></i> Data dan file fisik PDF telah aman tersimpan di server. Anda dapat membuka/mencetak surat sekarang atau kapan saja melalui menu <strong>Data Surat Keluar</strong>.
+                    <i class="fas fa-info-circle me-1"></i> Data dan file fisik PDF telah aman tersimpan di server. Anda
+                    dapat membuka/mencetak surat sekarang atau kapan saja melalui menu <strong>Data Surat
+                        Keluar</strong>.
                 </div>
             </div>
             <div class="modal-footer justify-content-center gap-2">
@@ -657,7 +684,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                     try {
                         const json = JSON.parse(xhr.responseText);
                         if (json && json.message) pesan = json.message;
-                    } catch (ex) {}
+                    } catch (ex) { }
 
                     alert('PERINGATAN GANGGUAN KONEKSI:\n\n' + pesan + '\n\nDemi menjaga integritas data, seluruh proses telah dibatalkan secara otomatis (ROLLBACK). Siswa TIDAK terkunci dan Anda dapat mengulangi proses pengajuan setelah koneksi stabil.');
                 },

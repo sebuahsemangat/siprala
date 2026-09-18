@@ -53,6 +53,9 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? '');
                 <a href="#" class="list-group-item list-group-item-action py-3" data-content="data_pembimbing.php">
                     <i class="fas fa-chalkboard-teacher fa-fw me-2"></i> Data Pembimbing
                 </a>
+                <a href="#" class="list-group-item list-group-item-action py-3" data-content="nilai_sidang.php">
+                    <i class="fas fa-file-signature fa-fw me-2"></i> Nilai Sidang
+                </a>
                 <a href="#" class="list-group-item list-group-item-action py-3" data-content="settings.php">
                     <i class="fas fa-cog fa-fw me-2"></i> Pengaturan
                 </a>
