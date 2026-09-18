@@ -2,6 +2,10 @@
 // cetak_surat.php - Handler untuk melihat dan mencetak ulang surat
 session_start();
 
+// Tangani koneksi tidak stabil agar PHP tetap menyelesaikan pembuatan file arsip
+ignore_user_abort(true);
+set_time_limit(120);
+
 // Cek autentikasi
 if (!isset($_SESSION['admin_id'])) {
     die("Akses ditolak. Silakan login terlebih dahulu.");
@@ -15,8 +19,8 @@ if ($id_surat <= 0) {
 $arsip_dir = __DIR__ . '/arsip_surat';
 $file_arsip = $arsip_dir . '/surat_' . $id_surat . '.pdf';
 
-// 1. JIKA FILE ARSIP SUDAH ADA, LANGSUNG TAMPILKAN INLINE DI BROWSER
-if (file_exists($file_arsip)) {
+// 1. JIKA FILE ARSIP SUDAH ADA DAN VALID (> 0 byte), LANGSUNG TAMPILKAN INLINE DI BROWSER
+if (file_exists($file_arsip) && filesize($file_arsip) > 0) {
     header('Content-Type: application/pdf');
     header('Content-Disposition: inline; filename="Surat_' . $id_surat . '.pdf"');
     header('Content-Length: ' . filesize($file_arsip));
@@ -128,7 +132,7 @@ $options = new Options();
 $options->set('defaultFont', 'Calibri');
 $options->set('defaultFontSize', 12);
 $options->set('isHtml5ParserEnabled', true);
-$options->set('isRemoteEnabled', true);
+$options->set('isRemoteEnabled', false);
 
 $dompdf = new Dompdf($options);
 

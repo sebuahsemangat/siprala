@@ -64,7 +64,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
         <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i> Form Pembuatan Surat Pengantar PKL</h5>
     </div>
     <div class="card-body container-form">
-        <form action="generate_surat.php" method="POST" target="_blank">
+        <form id="formBuatSurat" action="generate_surat.php" method="POST">
 
             <fieldset class="mb-4 p-3 border rounded">
                 <legend class="float-none w-auto px-2 fs-6 text-primary">Informasi Surat</legend>
@@ -198,10 +198,43 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
             </fieldset>
 
             <div class="d-grid">
-                <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-file-pdf me-2"></i> Generate &
-                    Simpan Surat</button>
+                <button type="submit" id="btnSubmitSurat" class="btn btn-primary btn-lg">
+                    <i class="fas fa-file-pdf me-2"></i> Generate & Simpan Surat
+                </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Sukses Generate Surat -->
+<div class="modal fade" id="modalSuksesSurat" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalSuksesSuratLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalSuksesSuratLabel"><i class="fas fa-check-circle me-2"></i> Surat Berhasil Dibuat</h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3 text-success">
+                    <i class="fas fa-file-circle-check fa-4x"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Surat Berhasil Dibuat dan Diarsipkan!</h5>
+                <p class="text-muted mb-2">Nomor Surat: <strong id="suksesNoSurat" class="text-dark"></strong></p>
+                <div class="alert alert-info py-2 px-3 small text-start">
+                    <i class="fas fa-info-circle me-1"></i> Data dan file fisik PDF telah aman tersimpan di server. Anda dapat membuka/mencetak surat sekarang atau kapan saja melalui menu <strong>Data Surat Keluar</strong>.
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center gap-2">
+                <a href="#" id="btnDownloadPdf" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-print me-1"></i> Buka / Cetak PDF
+                </a>
+                <button type="button" id="btnLihatDataSurat" class="btn btn-outline-success">
+                    <i class="fas fa-clipboard-list me-1"></i> Lihat Data Surat
+                </button>
+                <button type="button" id="btnBuatSuratLagi" class="btn btn-secondary">
+                    <i class="fas fa-plus me-1"></i> Buat Surat Lain
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -560,6 +593,94 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 $('#alamat_perusahaan').val('');
                 $('#kota_perusahaan').val('');
             }
+        });
+
+        // =========================================================================
+        // --- SUBMIT FORM VIA AJAX (ANTI DATA KORUP / INTERNET TIDAK STABIL) ---
+        // =========================================================================
+        $('#formBuatSurat').on('submit', function (e) {
+            e.preventDefault();
+
+            // Validasi: minimal ada satu baris siswa
+            if ($('#student-list .student-row-group').length === 0) {
+                alert('Peringatan: Harap tambahkan minimal satu siswa sebelum membuat surat.');
+                return false;
+            }
+
+            // Validasi nomor surat dan perihal
+            const perihal = $('#perihal').val();
+            if (!perihal) {
+                alert('Peringatan: Silakan pilih perihal surat.');
+                return false;
+            }
+
+            const namaPerusahaan = $('#nama_perusahaan').val().trim();
+            if (!namaPerusahaan) {
+                alert('Peringatan: Silakan isi atau pilih nama tempat PKL / perusahaan.');
+                $('#nama_perusahaan').focus();
+                return false;
+            }
+
+            const $btn = $('#btnSubmitSurat');
+            const originalBtnHtml = $btn.html();
+
+            // Kunci tombol submit & tampilkan loading spinner
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menyimpan Data & Membuat PDF...');
+
+            const formData = new FormData(this);
+            formData.append('is_ajax', '1');
+
+            $.ajax({
+                url: 'generate_surat.php',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.status === 'success') {
+                        // Pasang nomor surat & URL cetak
+                        $('#suksesNoSurat').text(res.no_surat);
+                        $('#btnDownloadPdf').attr('href', res.print_url);
+
+                        // Tampilkan modal sukses
+                        const modalEl = document.getElementById('modalSuksesSurat');
+                        const modalInstance = new bootstrap.Modal(modalEl);
+                        modalInstance.show();
+                    } else {
+                        alert('Gagal Membuat Surat:\n' + (res.message || 'Terjadi kesalahan pada server.'));
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Submit Error:", error, xhr.responseText);
+                    let pesan = "Terjadi gangguan koneksi internet atau server.";
+                    try {
+                        const json = JSON.parse(xhr.responseText);
+                        if (json && json.message) pesan = json.message;
+                    } catch (ex) {}
+
+                    alert('PERINGATAN GANGGUAN KONEKSI:\n\n' + pesan + '\n\nDemi menjaga integritas data, seluruh proses telah dibatalkan secara otomatis (ROLLBACK). Siswa TIDAK terkunci dan Anda dapat mengulangi proses pengajuan setelah koneksi stabil.');
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).html(originalBtnHtml);
+                }
+            });
+        });
+
+        // Tombol Lihat Data Surat pada Modal
+        $('#btnLihatDataSurat').on('click', function () {
+            const modalEl = document.getElementById('modalSuksesSurat');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+            loadContent('data_surat.php');
+        });
+
+        // Tombol Buat Surat Lain pada Modal
+        $('#btnBuatSuratLagi').on('click', function () {
+            const modalEl = document.getElementById('modalSuksesSurat');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+            loadContent('buat_surat.php');
         });
 
     });

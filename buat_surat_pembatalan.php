@@ -71,7 +71,7 @@ $koneksi->close();
         <h5 class="mb-0"><i class="fas fa-ban me-2"></i> Form Pengajuan Surat Pembatalan PKL</h5>
     </div>
     <div class="card-body container-form">
-        <form action="generate_surat_pembatalan.php" method="POST" target="_blank">
+        <form id="formSuratPembatalan" action="generate_surat_pembatalan.php" method="POST">
 
             <fieldset class="mb-4 p-3 border rounded">
                 <legend class="float-none w-auto px-2 fs-6 text-danger">Informasi Surat Pembatalan</legend>
@@ -166,11 +166,40 @@ $koneksi->close();
             </fieldset>
 
             <div class="d-grid">
-                <button type="submit" class="btn btn-danger btn-lg" <?php echo empty($siswa_list) ? 'disabled' : ''; ?>>
+                <button type="submit" id="btnSubmitPembatalan" class="btn btn-danger btn-lg" <?php echo empty($siswa_list) ? 'disabled' : ''; ?>>
                     <i class="fas fa-file-pdf me-2"></i> Generate Surat Pembatalan
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Sukses Pembatalan -->
+<div class="modal fade" id="modalSuksesPembatalan" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalSuksesPembatalanLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalSuksesPembatalanLabel"><i class="fas fa-check-circle me-2"></i> Pembatalan Berhasil Diproses</h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3 text-danger">
+                    <i class="fas fa-file-circle-xmark fa-4x"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Surat Pembatalan Berhasil Dibuat!</h5>
+                <p class="text-muted mb-2">Nomor Surat: <strong id="suksesNoSuratBatal" class="text-dark"></strong></p>
+                <div class="alert alert-info py-2 px-3 small text-start">
+                    <i class="fas fa-info-circle me-1"></i> Data pembatalan dan arsip file PDF telah tersimpan di server. Siswa terkait telah di-reset statusnya sehingga dapat diajukan kembali untuk surat lain.
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center gap-2">
+                <a href="#" id="btnDownloadPdfBatal" target="_blank" class="btn btn-danger">
+                    <i class="fas fa-print me-1"></i> Buka / Cetak PDF
+                </a>
+                <button type="button" id="btnLihatDataSuratBatal" class="btn btn-outline-secondary">
+                    <i class="fas fa-clipboard-list me-1"></i> Lihat Data Surat
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -192,6 +221,65 @@ $(document).ready(function() {
                 $('#checkAllStudents').prop('checked', true);
             }
         }
+    });
+
+    // Submit form pembatalan via AJAX
+    $('#formSuratPembatalan').on('submit', function(e) {
+        e.preventDefault();
+
+        if ($('.student-checkbox:checked').length === 0) {
+            alert('Peringatan: Silakan pilih minimal satu siswa yang akan dibatalkan.');
+            return false;
+        }
+
+        const $btn = $('#btnSubmitPembatalan');
+        const originalBtnHtml = $btn.html();
+
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses Pembatalan...');
+
+        const formData = new FormData(this);
+        formData.append('is_ajax', '1');
+
+        $.ajax({
+            url: 'generate_surat_pembatalan.php',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(res) {
+                if (res.status === 'success') {
+                    $('#suksesNoSuratBatal').text(res.no_surat);
+                    $('#btnDownloadPdfBatal').attr('href', res.print_url);
+
+                    const modalEl = document.getElementById('modalSuksesPembatalan');
+                    const modalInstance = new bootstrap.Modal(modalEl);
+                    modalInstance.show();
+                } else {
+                    alert('Gagal Memproses Pembatalan:\n' + (res.message || 'Terjadi kesalahan pada server.'));
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Submit Error:", error, xhr.responseText);
+                let pesan = "Terjadi gangguan koneksi internet atau server.";
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    if (json && json.message) pesan = json.message;
+                } catch (ex) {}
+
+                alert('PERINGATAN GANGGUAN KONEKSI:\n\n' + pesan + '\n\nDemi integritas data, proses dibatalkan otomatis (ROLLBACK). Silakan ulangi saat koneksi stabil.');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalBtnHtml);
+            }
+        });
+    });
+
+    $('#btnLihatDataSuratBatal').on('click', function() {
+        const modalEl = document.getElementById('modalSuksesPembatalan');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+        loadContent('data_surat.php');
     });
 });
 </script>

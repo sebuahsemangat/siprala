@@ -159,7 +159,7 @@ $koneksi->close();
             var no_surat = $(this).data('no-surat');
             var $row = $(this).closest('tr'); // Ambil baris tabel untuk dihapus
 
-            if (confirm('Anda yakin ingin menghapus Surat:\n' + no_surat + '\n\nPerhatian! Tindakan ini juga akan menghapus semua data siswa yang terkait dengan surat ini.')) {
+            if (confirm('Anda yakin ingin menghapus Surat:\n' + no_surat + '\n\nCatatan: Surat dan relasi pengajuannya akan dihapus dari sistem. Status siswa yang terdaftar pada surat ini akan otomatis bebas kembali sehingga dapat diajukan untuk surat baru.')) {
                 // Kirim permintaan AJAX ke skrip penghapusan
                 $.ajax({
                     url: 'ajax/hapus_surat.php', // Buat file ini (Lihat bagian di bawah)
