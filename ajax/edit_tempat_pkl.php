@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 // 1. Include koneksi database
-include '../koneksi.php';
+require_once __DIR__ . '/../koneksi.php';
 
 // 2. Cek apakah request adalah POST dan data yang dibutuhkan dikirim
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['id_tempat']) || !isset($_POST['nama_tempat'])) {
@@ -18,6 +18,7 @@ $alamat = isset($_POST['alamat']) ? trim($_POST['alamat']) : '';
 $kota = isset($_POST['kota']) ? trim($_POST['kota']) : '';
 $no_telepon = isset($_POST['no_telepon']) ? trim($_POST['no_telepon']) : '';
 $catatan = isset($_POST['catatan']) ? trim($_POST['catatan']) : '';
+$kapasitas = isset($_POST['kapasitas']) ? max(0, (int)$_POST['kapasitas']) : 0;
 
 if (!is_numeric($id_tempat) || empty($id_tempat)) {
     http_response_code(400);
@@ -33,14 +34,14 @@ if ($nama_tempat === '') {
 
 // 4. Update data ke database
 try {
-    $query = "UPDATE tempat_pkl SET nama_tempat = ?, alamat = ?, kota = ?, no_telepon = ?, catatan = ? WHERE id_tempat = ?";
+    $query = "UPDATE tempat_pkl SET nama_tempat = ?, alamat = ?, kota = ?, no_telepon = ?, catatan = ?, kapasitas = ? WHERE id_tempat = ?";
     $stmt = $koneksi->prepare($query);
     
     if (!$stmt) {
         throw new Exception("Error preparing statement: " . $koneksi->error);
     }
     
-    $stmt->bind_param("sssssi", $nama_tempat, $alamat, $kota, $no_telepon, $catatan, $id_tempat);
+    $stmt->bind_param("sssssii", $nama_tempat, $alamat, $kota, $no_telepon, $catatan, $kapasitas, $id_tempat);
     
     if (!$stmt->execute()) {
         throw new Exception("Error executing query: " . $stmt->error);

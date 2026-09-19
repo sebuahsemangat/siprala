@@ -13,7 +13,8 @@ $query = "
         t.nama_tempat,
         t.alamat,
         t.kota,
-        t.catatan
+        t.catatan,
+        t.kapasitas
     FROM surat s
     JOIN tempat_pkl t ON s.id_tempat_pkl = t.id_tempat
     WHERE s.perihal LIKE '%Pengajuan Tempat%' 

@@ -180,6 +180,17 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                             </div>
                         </div>
                     </div>
+
+                    <!-- Alert Kapasitas Tempat PKL -->
+                    <div id="alert_kapasitas_perusahaan" class="alert alert-info mt-2 d-none" role="alert">
+                        <div class="d-flex">
+                            <i id="icon_kapasitas_perusahaan" class="fas fa-users mt-1 me-2 flex-shrink-0 text-info"></i>
+                            <div>
+                                <strong class="d-block mb-1">Kapasitas Siswa Tempat PKL:</strong>
+                                <span id="isi_kapasitas_perusahaan"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="tujuan_departemen" class="form-label">Yth. Tujuan (Contoh:
@@ -340,11 +351,49 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
             }
         }
 
-        // Auto-fill alamat, kota, dan catatan ketika nama_perusahaan dipilih dari datalist atau diketik
+        // Fungsi helper untuk update alert kapasitas tempat PKL
+        function updateKapasitasPerusahaan(tempat) {
+            const alertEl = $('#alert_kapasitas_perusahaan');
+            const isiEl = $('#isi_kapasitas_perusahaan');
+            const iconEl = $('#icon_kapasitas_perusahaan');
+
+            if (!tempat) {
+                alertEl.addClass('d-none');
+                isiEl.empty();
+                return;
+            }
+
+            const kapasitas = parseInt(tempat.kapasitas) || 0;
+            const terisi = parseInt(tempat.jumlah_siswa) || 0;
+
+            // Reset class alert dan icon
+            alertEl.removeClass('alert-info alert-warning alert-danger alert-secondary d-none');
+            iconEl.removeClass('text-info text-warning text-danger text-secondary fas fa-users fa-exclamation-triangle fa-info-circle');
+
+            if (kapasitas > 0) {
+                const sisa = kapasitas - terisi;
+                if (terisi >= kapasitas) {
+                    alertEl.addClass('alert-danger');
+                    iconEl.addClass('fas fa-exclamation-triangle text-danger');
+                    isiEl.html(`Kapasitas kuota: <strong>${kapasitas} Siswa</strong> &bull; <span class="badge bg-danger">Kuota Penuh</span> (Sudah ditempati: <strong>${terisi}</strong> siswa, sisa kuota: <strong>0</strong> siswa).`);
+                } else {
+                    alertEl.addClass('alert-info');
+                    iconEl.addClass('fas fa-users text-info');
+                    isiEl.html(`Kapasitas kuota: <strong>${kapasitas} Siswa</strong> (Sudah ditempati: <strong>${terisi}</strong> siswa, sisa kuota tersedia: <strong>${sisa}</strong> siswa).`);
+                }
+            } else {
+                alertEl.addClass('alert-secondary');
+                iconEl.addClass('fas fa-info-circle text-secondary');
+                isiEl.html(`Kapasitas kuota: <strong>Tidak Dibatasi</strong> (Bebas / Tanpa batas kuota, terisi saat ini: <strong>${terisi}</strong> siswa).`);
+            }
+        }
+
+        // Auto-fill alamat, kota, catatan, dan kapasitas ketika nama_perusahaan dipilih dari datalist atau diketik
         $(document).on('input change', '#nama_perusahaan', function () {
             const val = $(this).val().trim();
             if (!val) {
                 updateCatatanPerusahaan('');
+                updateKapasitasPerusahaan(null);
                 return;
             }
 
@@ -360,8 +409,10 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                     $('#kota_perusahaan').val(found.kota);
                 }
                 updateCatatanPerusahaan(found.catatan);
+                updateKapasitasPerusahaan(found);
             } else {
                 updateCatatanPerusahaan('');
+                updateKapasitasPerusahaan(null);
             }
         });
 
@@ -537,6 +588,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                 data-alamat="${item.alamat || ''}" 
                 data-kota="${item.kota || ''}" 
                 data-catatan="${item.catatan || ''}"
+                data-kapasitas="${item.kapasitas || 0}"
                 data-tanggal="${item.tanggal}">
                 ${item.nama_tempat} (Surat: ${item.no_surat})
             </option>`);
@@ -605,8 +657,13 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
                     if (!alamat && found.alamat) $('#alamat_perusahaan').val(found.alamat);
                     if (!kota && found.kota) $('#kota_perusahaan').val(found.kota);
                     updateCatatanPerusahaan(selectedOption.data('catatan') || found.catatan);
-                } else if (selectedOption.data('catatan')) {
-                    updateCatatanPerusahaan(selectedOption.data('catatan'));
+                    updateKapasitasPerusahaan(found);
+                } else if (selectedOption.data('catatan') || selectedOption.data('kapasitas') !== undefined) {
+                    updateCatatanPerusahaan(selectedOption.data('catatan') || '');
+                    updateKapasitasPerusahaan({
+                        kapasitas: selectedOption.data('kapasitas') || 0,
+                        jumlah_siswa: 0
+                    });
                 }
             } else {
                 // Kosongkan jika tidak ada yang dipilih

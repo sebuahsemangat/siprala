@@ -12,6 +12,7 @@ $query_tempat = "
         tp.kota,
         tp.no_telepon,
         tp.catatan,
+        tp.kapasitas,
         tp.id_pembimbing,
         p.nama_pembimbing,
         COUNT(s.id_siswa) AS jumlah_siswa
@@ -22,7 +23,7 @@ $query_tempat = "
     LEFT JOIN 
         siswa s ON tp.id_tempat = s.id_tempat
     GROUP BY
-        tp.id_tempat, tp.nama_tempat, tp.alamat, tp.kota, tp.no_telepon, tp.catatan, tp.id_pembimbing, p.nama_pembimbing
+        tp.id_tempat, tp.nama_tempat, tp.alamat, tp.kota, tp.no_telepon, tp.catatan, tp.kapasitas, tp.id_pembimbing, p.nama_pembimbing
     ORDER BY 
         tp.nama_tempat ASC
 ";
@@ -56,18 +57,27 @@ $koneksi->close();
     </div>
     <div class="card-body container-form">
 
+        <!-- Tombol Aksi Atas -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                data-bs-target="#tambahTempatPklModal" id="btnTambahTempatPkl">
+                <i class="fas fa-plus me-2"></i> Tambah Tempat PKL
+            </button>
+        </div>
+
         <div class="table-responsive">
             <table id="tempatPklTable" class="table table-hover align-middle" style="width:100%">
                 <thead>
                     <tr>
                         <th style="width: 40px;">No.</th>
                         <th>Nama Tempat PKL</th>
-                        <th style="width: 150px;">Alamat</th>
-                        <th style="width: 100px;">Kota</th>
-                        <th style="width: 120px;">No. Telepon</th>
-                        <th style="width: 150px;">Catatan</th>
-                        <th style="width: 150px;">Nama Pembimbing</th>
-                        <th style="width: 110px;">Jumlah Siswa</th>
+                        <th style="width: 140px;">Alamat</th>
+                        <th style="width: 90px;">Kota</th>
+                        <th style="width: 110px;">No. Telepon</th>
+                        <th style="width: 130px;">Catatan</th>
+                        <th style="width: 80px;" class="text-center">Kapasitas</th>
+                        <th style="width: 140px;">Nama Pembimbing</th>
+                        <th style="width: 100px;" class="text-center">Jumlah Siswa</th>
                         <th style="width: 130px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -113,6 +123,13 @@ $koneksi->close();
                                     <span class="text-muted fst-italic small">-</span>
                                 <?php endif; ?>
                             </td>
+                            <td class="text-center">
+                                <?php if (!empty($tempat['kapasitas']) && $tempat['kapasitas'] > 0): ?>
+                                    <span class="badge bg-primary fs-6"><?php echo (int)$tempat['kapasitas']; ?></span>
+                                <?php else: ?>
+                                    <span class="badge bg-light text-muted border">0 (Bebas)</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <?php
                                 if ($tempat['id_pembimbing'] != 0 && !empty($tempat['nama_pembimbing'])) {
@@ -122,10 +139,14 @@ $koneksi->close();
                                 }
                                 ?>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <?php
                                 if ($tempat['jumlah_siswa'] > 0) {
-                                    echo '<span class="badge bg-success">' . $tempat['jumlah_siswa'] . '</span>';
+                                    $badge_class = 'bg-success';
+                                    if (!empty($tempat['kapasitas']) && $tempat['kapasitas'] > 0 && $tempat['jumlah_siswa'] >= $tempat['kapasitas']) {
+                                        $badge_class = 'bg-danger';
+                                    }
+                                    echo '<span class="badge ' . $badge_class . '">' . $tempat['jumlah_siswa'] . '</span>';
                                 } else {
                                     echo '<span class="badge bg-secondary">Belum Terisi</span>';
                                 }
@@ -148,12 +169,14 @@ $koneksi->close();
                                         data-kota="<?php echo htmlspecialchars($tempat['kota'] ?? ''); ?>"
                                         data-telepon="<?php echo htmlspecialchars($tempat['no_telepon'] ?? ''); ?>"
                                         data-catatan="<?php echo htmlspecialchars($tempat['catatan'] ?? ''); ?>"
+                                        data-kapasitas="<?php echo (int)($tempat['kapasitas'] ?? 0); ?>"
                                         title="Edit Tempat PKL">
                                         <i class="fas fa-edit me-1"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger text-white" data-bs-toggle="modal"
+                                    <button class="btn btn-sm btn-danger text-white btn-hapus-tempat" data-bs-toggle="modal"
                                         data-bs-target="#hapusTempatPklModal" data-id="<?php echo $tempat['id_tempat']; ?>"
                                         data-tempat="<?php echo htmlspecialchars($tempat['nama_tempat'] ?? ''); ?>"
+                                        data-siswa="<?php echo (int)($tempat['jumlah_siswa'] ?? 0); ?>"
                                         title="Hapus Tempat PKL">
                                         <i class="fas fa-trash me-1"></i>
                                     </button>
@@ -205,6 +228,75 @@ $koneksi->close();
     </div>
 </div>
 
+<!-- Modal Tambah Tempat PKL -->
+<div class="modal fade" id="tambahTempatPklModal" tabindex="-1" aria-labelledby="tambahTempatPklModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tambahTempatPklModalLabel"><i class="fas fa-plus-circle me-2"></i>Tambah Tempat PKL
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form id="formTambahTempatPkl">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="tambah_nama_tempat" class="form-label">Nama Tempat PKL <span
+                                class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="tambah_nama_tempat" name="nama_tempat" required
+                            placeholder="Contoh: PT Telkom Indonesia">
+                    </div>
+                    <div class="mb-3">
+                        <label for="tambah_alamat" class="form-label">Alamat</label>
+                        <textarea class="form-control" id="tambah_alamat" name="alamat" rows="3"
+                            placeholder="Masukkan alamat tempat PKL..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="tambah_kota" class="form-label">Kota</label>
+                            <input type="text" class="form-control" id="tambah_kota" name="kota"
+                                placeholder="Contoh: Sumedang">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tambah_kapasitas" class="form-label">Kapasitas Siswa</label>
+                            <input type="number" class="form-control" id="tambah_kapasitas" name="kapasitas" min="0" value="0"
+                                placeholder="0 = Bebas / Tanpa batas">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tambah_no_telepon" class="form-label">No. Telepon</label>
+                        <input type="tel" class="form-control" id="tambah_no_telepon" name="no_telepon"
+                            placeholder="Contoh: (0261) 201234 atau 08123456789">
+                    </div>
+                    <div class="mb-3">
+                        <label for="tambah_id_pembimbing" class="form-label">Pembimbing Sekolah</label>
+                        <select class="form-select" id="tambah_id_pembimbing" name="id_pembimbing">
+                            <option value="0">-- Belum Ditugaskan --</option>
+                            <?php foreach ($data_pembimbing as $pembimbing): ?>
+                                <option value="<?php echo $pembimbing['id_pembimbing']; ?>">
+                                    <?php echo htmlspecialchars($pembimbing['nama_pembimbing'] ?? ''); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tambah_catatan" class="form-label">Catatan</label>
+                        <textarea class="form-control" id="tambah_catatan" name="catatan" rows="3"
+                            placeholder="Tambahkan catatan khusus terkait tempat PKL ini..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="btnSimpanTambah">
+                        <i class="fas fa-save me-1"></i> Simpan Tempat PKL
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Edit Tempat PKL -->
 <div class="modal fade" id="editTempatPklModal" tabindex="-1" aria-labelledby="editTempatPklModalLabel"
     aria-hidden="true">
@@ -229,10 +321,17 @@ $koneksi->close();
                         <textarea class="form-control" id="edit_alamat" name="alamat" rows="3"
                             placeholder="Masukkan alamat tempat PKL..."></textarea>
                     </div>
-                    <div class="mb-3">
-                        <label for="edit_kota" class="form-label">Kota</label>
-                        <input type="text" class="form-control" id="edit_kota" name="kota"
-                            placeholder="Contoh: Sumedang">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_kota" class="form-label">Kota</label>
+                            <input type="text" class="form-control" id="edit_kota" name="kota"
+                                placeholder="Contoh: Sumedang">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_kapasitas" class="form-label">Kapasitas Siswa</label>
+                            <input type="number" class="form-control" id="edit_kapasitas" name="kapasitas" min="0"
+                                placeholder="0 = Bebas / Tanpa batas">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="edit_no_telepon" class="form-label">No. Telepon</label>
@@ -255,6 +354,39 @@ $koneksi->close();
     </div>
 </div>
 
+<!-- Modal Hapus Tempat PKL -->
+<div class="modal fade" id="hapusTempatPklModal" tabindex="-1" aria-labelledby="hapusTempatPklModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="hapusTempatPklModalLabel"><i
+                        class="fas fa-exclamation-triangle me-2"></i>Konfirmasi Hapus Tempat PKL</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="hapus_id_tempat">
+                <p class="mb-2">Apakah Anda yakin ingin menghapus tempat PKL berikut?</p>
+                <div class="p-3 bg-light rounded border mb-3">
+                    <strong class="text-danger fs-5" id="hapus_nama_tempat"></strong>
+                </div>
+                <div class="alert alert-warning small mb-0" id="hapus_warning_tempat">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Penempatan siswa pada tempat PKL ini akan dinetralkan secara otomatis.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmHapusTempat">
+                    <span class="spinner-border spinner-border-sm me-1 d-none" id="spinnerHapusTempat"></span>
+                    <i class="fas fa-trash me-1" id="iconHapusTempat"></i> Hapus Tempat PKL
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     $(document).ready(function () {
         // Inisialisasi DataTables
@@ -265,11 +397,11 @@ $koneksi->close();
             "columnDefs": [{
                 "orderable": false,
                 "searchable": false,
-                "targets": [0, 8]
+                "targets": [0, 9]
             },
             {
                 "className": "text-center",
-                "targets": [0, 7, 8]
+                "targets": [0, 6, 8, 9]
             }
             ],
             "language": {
@@ -282,7 +414,7 @@ $koneksi->close();
                 titleAttr: 'Export Data ke Excel',
                 className: 'btn btn-success',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
                     format: {
                         body: function (data, row, column, node) {
                             if (column === 5) {
@@ -387,6 +519,7 @@ $koneksi->close();
             var kota = button.data('kota') || '';
             var telepon = button.data('telepon') || '';
             var catatan = button.data('catatan') || '';
+            var kapasitas = button.data('kapasitas') !== undefined ? button.data('kapasitas') : 0;
 
             var modal = $(this);
             modal.find('#edit_id_tempat').val(id_tempat);
@@ -395,6 +528,7 @@ $koneksi->close();
             modal.find('#edit_kota').val(kota);
             modal.find('#edit_no_telepon').val(telepon);
             modal.find('#edit_catatan').val(catatan);
+            modal.find('#edit_kapasitas').val(kapasitas);
         });
 
         // Event handler untuk submit form Edit Tempat PKL
@@ -432,10 +566,103 @@ $koneksi->close();
             });
         });
 
-        // Event handler untuk tombol Tambah (Dummy)
-        $('#tambahTempatBtn').on('click', function (e) {
+        // Event handler saat modal Tambah Tempat PKL dibuka
+        $('#tambahTempatPklModal').on('show.bs.modal', function () {
+            $('#formTambahTempatPkl')[0].reset();
+            $('#tambah_kapasitas').val(0);
+            $('#tambah_id_pembimbing').val(0);
+        });
+
+        // Event handler untuk submit form Tambah Tempat PKL
+        $('#formTambahTempatPkl').on('submit', function (e) {
             e.preventDefault();
-            alert("Aksi Tambah Tempat PKL akan diarahkan ke form input.");
+
+            const submitBtn = $('#btnSimpanTambah');
+            const originalText = submitBtn.html();
+
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...');
+
+            $.ajax({
+                url: 'ajax/tambah_tempat_pkl.php',
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function (response) {
+                    $('#tambahTempatPklModal').modal('hide');
+
+                    if (response.status === 'success') {
+                        loadContent('data_tempat_pkl.php');
+                    } else {
+                        alert('Gagal: ' + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $('#tambahTempatPklModal').modal('hide');
+                    console.error("AJAX Error:", status, error, xhr.responseText);
+                    alert('Terjadi kesalahan saat menghubungi server: Silakan cek log atau detail error.');
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+
+        // Event handler saat modal Hapus Tempat PKL dibuka
+        $('#hapusTempatPklModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var id = button.data('id');
+            var nama = button.data('tempat');
+            var siswa = parseInt(button.data('siswa')) || 0;
+
+            $('#hapus_id_tempat').val(id);
+            $('#hapus_nama_tempat').text(nama);
+
+            if (siswa > 0) {
+                $('#hapus_warning_tempat').html('<i class="fas fa-exclamation-triangle me-1"></i> <strong>Perhatian:</strong> Tempat PKL ini saat ini memiliki <strong>' + siswa + ' siswa</strong> yang terdaftar. Menghapus tempat PKL akan mereset status penempatan siswa tersebut menjadi belum ditempatkan.');
+            } else {
+                $('#hapus_warning_tempat').html('<i class="fas fa-info-circle me-1"></i> Data tempat PKL ini belum memiliki siswa yang ditempatkan.');
+            }
+        });
+
+        // Eksekusi Hapus Tempat PKL
+        $('#btnConfirmHapusTempat').on('click', function () {
+            var id = $('#hapus_id_tempat').val();
+            var btn = $(this);
+            var spinner = $('#spinnerHapusTempat');
+            var icon = $('#iconHapusTempat');
+
+            btn.prop('disabled', true);
+            spinner.removeClass('d-none');
+            icon.addClass('d-none');
+
+            $.ajax({
+                url: 'ajax/hapus_tempat_pkl.php',
+                type: 'POST',
+                data: { id_tempat: id },
+                dataType: 'json',
+                success: function (res) {
+                    $('#hapusTempatPklModal').modal('hide');
+                    if (res.status === 'success') {
+                        loadContent('data_tempat_pkl.php');
+                    } else {
+                        alert('Gagal menghapus: ' + res.message);
+                    }
+                },
+                error: function (xhr) {
+                    $('#hapusTempatPklModal').modal('hide');
+                    var msg = 'Terjadi kesalahan saat menghapus data.';
+                    try {
+                        var r = JSON.parse(xhr.responseText);
+                        if (r.message) msg = r.message;
+                    } catch (e) { }
+                    alert(msg);
+                },
+                complete: function () {
+                    btn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    icon.removeClass('d-none');
+                }
+            });
         });
     });
 </script>
