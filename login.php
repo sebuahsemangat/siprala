@@ -89,10 +89,10 @@ if (isset($_SESSION['logout_success'])) {
             <!-- Logo & Judul Header -->
             <div class="text-center mb-4">
                 <div class="login-header-icon mb-3">
-                    <i class="fas fa-graduation-cap text-white fs-3"></i>
+                    <img src="logo_ifsu.png" alt="" height="100">
                 </div>
                 <h2 class="h4 fw-bold text-dark mb-1">SIPRALA</h2>
-                <p class="text-muted small mb-0">SMK Informatika Sumedang</p>
+                <p class="text-muted small mb-0">Sistem Informasi Praktik Kerja Lapangan<br>SMK Informatika Sumedang</p>
             </div>
 
             <!-- Alert Error -->
@@ -157,8 +157,8 @@ if (isset($_SESSION['logout_success'])) {
                                 <input type="password" id="password" name="password"
                                     class="form-control border-start-0 border-end-0 ps-0"
                                     placeholder="Masukkan password" autocomplete="current-password" required>
-                                <button class="btn border border-start-0 text-muted" type="button"
-                                    id="passwordToggle" title="Tampilkan/sembunyikan password">
+                                <button class="btn border border-start-0 text-muted" type="button" id="passwordToggle"
+                                    title="Tampilkan/sembunyikan password">
                                     <i class="fas fa-eye" id="eyeIcon"></i>
                                 </button>
                             </div>
