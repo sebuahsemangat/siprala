@@ -48,6 +48,7 @@ CREATE TABLE `absensi_mingguan` (
   `id_absensi_mingguan` int NOT NULL,
   `id_pembimbing` int NOT NULL,
   `id_tempat` int NOT NULL,
+  `minggu_ke` int NOT NULL DEFAULT '1',
   `tanggal_monitoring` date NOT NULL,
   `platform` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `platform_lainnya` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,

@@ -29,13 +29,14 @@ if (isset($_SESSION['login_error'])) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         * {
             font-family: 'Inter', sans-serif;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             background-color: #f5f7fa;
         }
@@ -96,34 +97,36 @@ if (isset($_SESSION['login_error'])) {
         .card-body {
             padding: 24px;
         }
-        
+
         .form-label {
             font-weight: 600;
             color: #4a5568;
             margin-bottom: 8px;
             font-size: 14px;
         }
-        
-        .form-control, .form-select {
+
+        .form-control,
+        .form-select {
             border: 2px solid #e2e8f0;
             border-radius: 10px;
             padding: 12px 16px;
             font-size: 15px;
             transition: all 0.3s ease;
         }
-        
-        .form-control:focus, .form-select:focus {
+
+        .form-control:focus,
+        .form-select:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
             outline: none;
         }
-        
+
         .form-text {
             color: #718096;
             font-size: 13px;
             margin-top: 6px;
         }
-        
+
         /* Button Styling */
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -135,12 +138,12 @@ if (isset($_SESSION['login_error'])) {
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
-        
+
         /* Alert Styling */
         .alert {
             border-radius: 10px;
@@ -148,12 +151,12 @@ if (isset($_SESSION['login_error'])) {
             padding: 14px 18px;
             font-size: 14px;
         }
-        
+
         .alert-danger {
             background-color: #fee2e2;
             color: #991b1b;
         }
-        
+
         /* Captcha Box */
         .captcha-box {
             background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
@@ -167,7 +170,7 @@ if (isset($_SESSION['login_error'])) {
             color: #4a5568;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
         }
-        
+
         /* Footer */
         .footer {
             background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
@@ -177,28 +180,28 @@ if (isset($_SESSION['login_error'])) {
             margin-top: auto;
             font-size: 14px;
         }
-        
+
         /* Responsive */
         @media (max-width: 576px) {
             .main-wrapper {
                 padding: 15px;
             }
-            
+
             .card-header h4 {
                 font-size: 18px;
             }
-            
+
             .card-body {
                 padding: 20px;
             }
-            
+
             .captcha-box {
                 font-size: 20px;
                 letter-spacing: 5px;
             }
         }
     </style>
-    
+
 </head>
 
 <body>
@@ -213,9 +216,9 @@ if (isset($_SESSION['login_error'])) {
                 </div>
                 <div class="card-body">
                     <div class="logo-container">
-                        <img src="../img/logo_ifsu.png" alt="Logo SMK Informatika Sumedang" class="logo-img">
+                        <img src="../siprala/img/logo_ifsu.png" alt="Logo SMK Informatika Sumedang" class="logo-img">
                     </div>
-                    
+
                     <?php if ($error_message): ?>
                         <div class="alert alert-danger" role="alert">
                             <i class="fas fa-exclamation-triangle me-2"></i><?= htmlspecialchars($error_message) ?>
@@ -255,8 +258,9 @@ if (isset($_SESSION['login_error'])) {
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <input type="text" class="form-control h-100" id="captcha_input" name="captcha_input"
-                                        placeholder="Ketik angka" required maxlength="4" inputmode="numeric">
+                                    <input type="text" class="form-control h-100" id="captcha_input"
+                                        name="captcha_input" placeholder="Ketik angka" required maxlength="4"
+                                        inputmode="numeric">
                                 </div>
                             </div>
                             <div class="form-text">

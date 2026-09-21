@@ -19,13 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $id_pembimbing = $_SESSION['id_pembimbing'];
 $id_tempat = $_POST['id_tempat'] ?? '';
+$minggu_ke = $_POST['minggu_ke'] ?? '';
 $tanggal = $_POST['tanggal_monitoring'] ?? '';
 $platform = $_POST['platform'] ?? '';
 $platform_lainnya = $_POST['platform_lainnya'] ?? null;
 $catatan = $_POST['catatan'] ?? '';
 
 // 3. Validasi Input Dasar
-if (empty($id_tempat) || empty($tanggal) || empty($platform) || empty($catatan)) {
+if (empty($id_tempat) || empty($minggu_ke) || empty($tanggal) || empty($platform) || empty($catatan)) {
     echo json_encode(['success' => false, 'message' => 'Mohon lengkapi semua field wajib.']);
     exit;
 }
@@ -72,13 +73,14 @@ if (!move_uploaded_file($file_tmp, $destination)) {
 try {
     // 5. Simpan ke Database
     $sql = "INSERT INTO absensi_mingguan 
-            (id_pembimbing, id_tempat, tanggal_monitoring, platform, platform_lainnya, catatan, foto_bukti) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
+            (id_pembimbing, id_tempat, minggu_ke, tanggal_monitoring, platform, platform_lainnya, catatan, foto_bukti) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $id_pembimbing, 
         $id_tempat, 
+        $minggu_ke,
         $tanggal, 
         $platform, 
         $platform_lainnya, 

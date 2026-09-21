@@ -16,6 +16,7 @@ try {
     // Agar kita bisa menampilkan Nama Tempat, bukan ID-nya
     $sql = "SELECT 
                 am.id_absensi_mingguan,
+                am.minggu_ke,
                 am.tanggal_monitoring,
                 am.platform,
                 am.platform_lainnya,
