@@ -81,7 +81,7 @@ $data_perusahaan = [
 function formatNomorHP($hp)
 {
     // Bersihkan karakter selain angka
-    $clean = preg_replace('/[^0-9]/', '', (string)$hp);
+    $clean = preg_replace('/[^0-9]/', '', (string) $hp);
     if (empty($clean)) {
         return '';
     }
@@ -282,7 +282,7 @@ try {
     // 7. JIKA SAMPAI TAHAP INI SEMUA SUKSES (DB + PDF), LAKUKAN COMMIT!
     $koneksi->commit();
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     // ROLLBACK DATABASE JIKA TERJADI KESALAHAN!
     // Ini memastikan tabel surat & siswa_surat tetap bersih dan siswa TIDAK TERKUNCI!
     $koneksi->rollback();
