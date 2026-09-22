@@ -141,14 +141,16 @@
 </div>
 
 <!-- Modal Download Laporan -->
-<div class="modal fade" id="modalDownloadLaporan" tabindex="-1" aria-labelledby="modalDownloadLaporanLabel" aria-hidden="true">
+<div class="modal fade" id="modalDownloadLaporan" tabindex="-1" aria-labelledby="modalDownloadLaporanLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalDownloadLaporanLabel">
                     <i class="fas fa-file-download me-2"></i>Download Laporan Absensi Mingguan
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <form id="formDownloadLaporan" action="download_laporan.php" method="GET" target="_blank">
                 <div class="modal-body">
@@ -167,8 +169,8 @@
                     <div class="mb-3">
                         <label for="download_format" class="form-label fw-bold">Format Laporan</label>
                         <select class="form-select" name="format" id="download_format">
-                            <option value="pdf" selected>Dokumen PDF (Disertai Foto Bukti)</option>
-                            <option value="excel">Microsoft Excel (.xls)</option>
+                            <option value="pdf" selected>PDF</option>
+                            <!--<option value="excel">Microsoft Excel (.xls)</option>-->
                         </select>
                     </div>
                 </div>
@@ -241,7 +243,7 @@
                     select.empty();
                     if (response.success && response.data.length > 0) {
                         select.append('<option value="" selected disabled>-- Pilih Tempat PKL --</option>');
-                        select.append('<option value="all">Semua Tempat PKL Binaan</option>');
+                        //select.append('<option value="all">Semua Tempat PKL Binaan</option>');
                         response.data.forEach(item => {
                             select.append(`<option value="${item.id_tempat}">${item.nama_tempat}</option>`);
                         });
@@ -261,7 +263,7 @@
                     select.empty();
                     if (response.success && response.data.length > 0) {
                         select.append('<option value="" selected disabled>-- Pilih Bulan --</option>');
-                        select.append('<option value="all">Semua Bulan</option>');
+                        //select.append('<option value="all">Semua Bulan</option>');
                         response.data.forEach(item => {
                             select.append(`<option value="${item.periode}">${item.label}</option>`);
                         });
@@ -335,16 +337,8 @@
                                 }
                             }
                         ],
-                        dom: 'Bfrtip',
-                        buttons: [
-                            {
-                                text: '<i class="fas fa-file-download me-1"></i> Download Laporan',
-                                className: 'btn btn-primary btn-sm',
-                                action: function () {
-                                    bukaModalDownload();
-                                }
-                            }
-                        ],
+                        dom: 'frtip',
+                        buttons: [],
                         order: [[0, 'desc']], // Urutkan berdasarkan tanggal terbaru
                         language: { url: "../admin/data_table_id.json" }
                     });
