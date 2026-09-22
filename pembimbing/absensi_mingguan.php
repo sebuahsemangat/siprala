@@ -112,8 +112,11 @@
 
     <div class="col-12">
         <div class="card shadow">
-            <div class="card-header bg-white border-bottom py-3">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 text-primary"><i class="fas fa-history me-2"></i>Riwayat Absensi Mingguan</h5>
+                <button type="button" class="btn btn-primary btn-sm" id="btnDownloadLaporanHeader">
+                    <i class="fas fa-file-download me-1"></i> Download Laporan
+                </button>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -137,11 +140,54 @@
     </div>
 </div>
 
+<!-- Modal Download Laporan -->
+<div class="modal fade" id="modalDownloadLaporan" tabindex="-1" aria-labelledby="modalDownloadLaporanLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalDownloadLaporanLabel">
+                    <i class="fas fa-file-download me-2"></i>Download Laporan Absensi Mingguan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formDownloadLaporan" action="download_laporan.php" method="GET" target="_blank">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="download_id_tempat" class="form-label fw-bold">Tempat PKL Binaan</label>
+                        <select class="form-select" name="id_tempat" id="download_id_tempat" required>
+                            <option value="" selected disabled>Memuat daftar tempat...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="download_bulan" class="form-label fw-bold">Pilihan Bulan</label>
+                        <select class="form-select" name="bulan" id="download_bulan" required>
+                            <option value="" selected disabled>Memuat daftar bulan...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="download_format" class="form-label fw-bold">Format Laporan</label>
+                        <select class="form-select" name="format" id="download_format">
+                            <option value="pdf" selected>Dokumen PDF (Disertai Foto Bukti)</option>
+                            <option value="excel">Microsoft Excel (.xls)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-download me-2"></i>Download Laporan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     (function () {
         let riwayatTable;
 
-        // --- 1. LOAD DROPDOWN TEMPAT PKL ---
+        // --- 1. LOAD DROPDOWN TEMPAT PKL (FORM INPUT) ---
         function loadTempatPkl() {
             $.ajax({
                 url: 'get_tempat_pkl.php',
@@ -183,7 +229,61 @@
             }
         });
 
-        // --- 4. LOAD TABEL RIWAYAT (DATATABLES) ---
+        // --- 4. MODAL DOWNLOAD LAPORAN ---
+        function loadFilterDownload() {
+            // Load Tempat PKL ke Modal
+            $.ajax({
+                url: 'get_tempat_pkl.php',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    const select = $('#download_id_tempat');
+                    select.empty();
+                    if (response.success && response.data.length > 0) {
+                        select.append('<option value="" selected disabled>-- Pilih Tempat PKL --</option>');
+                        select.append('<option value="all">Semua Tempat PKL Binaan</option>');
+                        response.data.forEach(item => {
+                            select.append(`<option value="${item.id_tempat}">${item.nama_tempat}</option>`);
+                        });
+                    } else {
+                        select.append('<option value="" disabled>Tidak ada tempat binaan</option>');
+                    }
+                }
+            });
+
+            // Load Bulan Monitoring ke Modal
+            $.ajax({
+                url: 'get_bulan_monitoring.php',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    const select = $('#download_bulan');
+                    select.empty();
+                    if (response.success && response.data.length > 0) {
+                        select.append('<option value="" selected disabled>-- Pilih Bulan --</option>');
+                        select.append('<option value="all">Semua Bulan</option>');
+                        response.data.forEach(item => {
+                            select.append(`<option value="${item.periode}">${item.label}</option>`);
+                        });
+                    } else {
+                        select.append('<option value="" disabled>Belum ada data monitoring yang diinput</option>');
+                    }
+                }
+            });
+        }
+
+        function bukaModalDownload() {
+            loadFilterDownload();
+            const modalEl = document.getElementById('modalDownloadLaporan');
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modalInstance.show();
+        }
+
+        $('#btnDownloadLaporanHeader').on('click', function () {
+            bukaModalDownload();
+        });
+
+        // --- 5. LOAD TABEL RIWAYAT (DATATABLES) ---
         function loadRiwayatMingguan() {
             $.ajax({
                 url: 'get_riwayat_mingguan.php',
@@ -225,14 +325,12 @@
                             {
                                 data: 'catatan',
                                 render: function (data) {
-                                    // Potong teks jika terlalu panjang
                                     return data.length > 50 ? data.substr(0, 50) + '...' : data;
                                 }
                             },
                             {
                                 data: 'foto_bukti',
                                 render: function (data) {
-                                    // Path gambar dari database adalah relative (uploads/...), perlu tambah ../
                                     return data ? `<button class="btn btn-sm btn-secondary" onclick="window.open('../${data}', '_blank')"><i class="fas fa-image"></i> Lihat</button>` : '-';
                                 }
                             }
@@ -240,16 +338,11 @@
                         dom: 'Bfrtip',
                         buttons: [
                             {
-                                extend: 'excel',
-                                text: '<i class="fas fa-file-excel"></i> Export Excel',
-                                className: 'btn btn-success btn-sm me-1',
-                                title: 'Laporan_Mingguan_PKL'
-                            },
-                            {
-                                extend: 'pdf',
-                                text: '<i class="fas fa-file-pdf"></i> Export PDF',
-                                className: 'btn btn-danger btn-sm',
-                                title: 'Laporan_Mingguan_PKL'
+                                text: '<i class="fas fa-file-download me-1"></i> Download Laporan',
+                                className: 'btn btn-primary btn-sm',
+                                action: function () {
+                                    bukaModalDownload();
+                                }
                             }
                         ],
                         order: [[0, 'desc']], // Urutkan berdasarkan tanggal terbaru
@@ -259,7 +352,7 @@
             });
         }
 
-        // --- 5. HANDLE SUBMIT FORM ---
+        // --- 6. HANDLE SUBMIT FORM INPUT ABSENSI ---
         $('#formAbsensiMingguan').on('submit', function (e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -281,8 +374,9 @@
                         $('#imgPreview').hide();
                         $('#groupPlatformLainnya').hide();
 
-                        // Refresh tabel otomatis
+                        // Refresh tabel & opsi download otomatis
                         loadRiwayatMingguan();
+                        loadFilterDownload();
                     } else {
                         $('#alertArea').html(`<div class="alert alert-danger">${res.message}</div>`);
                     }
@@ -299,6 +393,7 @@
         // Init Load
         loadTempatPkl();
         loadRiwayatMingguan();
+        loadFilterDownload();
 
     })();
 </script>
