@@ -248,6 +248,7 @@ $koneksi->close(); // Tutup koneksi setelah selesai mengambil data
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title" id="modalSuksesSuratLabel"><i class="fas fa-check-circle me-2"></i> Surat
                     Berhasil Dibuat</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center py-4">
                 <div class="mb-3 text-success">

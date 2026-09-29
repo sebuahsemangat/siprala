@@ -160,7 +160,8 @@ function make_address_row($data)
             <td style="border: none;">
                 <br>
                 Kepada,<br>
-                <strong><?php echo $data_perusahaan['yth'] . ' ' . $data_perusahaan['tujuan']; ?></strong><br>
+                <strong>Yth. <?php echo $data_perusahaan['yth'] ?></strong><br>
+                <strong><?php echo $data_perusahaan['tujuan'] ?></strong><br>
                 <?php echo $data_perusahaan['alamat_tujuan']; ?><br>
                 Di<br>
                 <strong><?php echo $data_perusahaan['kota_tujuan']; ?></strong>
@@ -189,15 +190,15 @@ function make_address_row($data)
                         </tr>
                     </thead>
                     <tbody>
-                                <?php $no = 1;
-                                foreach ($data_siswa as $siswa): ?>
+                        <?php $no = 1;
+                        foreach ($data_siswa as $siswa): ?>
                             <tr>
                                 <td><?php echo $no++; ?></td>
                                 <td style="text-align: left;"><?php echo $siswa['nama']; ?></td>
                                 <td><?php echo $siswa['kelas']; ?></td>
                                 <td><?php echo $siswa['nis']; ?></td>
                             </tr>
-                                <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
                 <br>

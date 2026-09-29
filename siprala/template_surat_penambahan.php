@@ -160,7 +160,8 @@ function make_address_row($data)
             <td style="border: none;">
                 <br>
                 Kepada,<br>
-                <strong><?php echo $data_perusahaan['yth'] . ' ' . $data_perusahaan['tujuan']; ?></strong><br>
+                <strong><?php echo $data_perusahaan['yth'] ?></strong><br>
+                <strong><?php echo $data_perusahaan['tujuan'] ?></strong><br>
                 <?php echo $data_perusahaan['alamat_tujuan']; ?><br>
                 Di<br>
                 <strong><?php echo $data_perusahaan['kota_tujuan']; ?></strong>
