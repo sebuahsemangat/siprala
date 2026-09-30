@@ -50,6 +50,9 @@ $koneksi->close();
             <a href="download_template_pembimbing.php" class="btn btn-outline-success">
                 <i class="fas fa-download me-2"></i> Download Template
             </a>
+            <a href="download_rekap_pkl.php" class="btn btn-outline-primary" title="Download rekap siswa per pembimbing dalam format Excel">
+                <i class="fas fa-file-download me-2"></i> Rekap Bimbingan PKL
+            </a>
         </div>
 
         <!-- Tabel DataTables -->
