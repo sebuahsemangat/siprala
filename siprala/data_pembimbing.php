@@ -98,6 +98,12 @@ $koneksi->close();
                                         title="Edit Pembimbing">
                                         <i class="fas fa-edit"></i>
                                     </button>
+                                    <button class="btn btn-sm btn-secondary text-white btn-reset-password"
+                                        data-id="<?= $p['id_pembimbing']; ?>"
+                                        data-nama="<?= htmlspecialchars($p['nama_pembimbing']); ?>"
+                                        title="Reset Password ke Default">
+                                        <i class="fas fa-key"></i>
+                                    </button>
                                     <button class="btn btn-sm btn-danger text-white btn-hapus-pembimbing"
                                         data-id="<?= $p['id_pembimbing']; ?>"
                                         data-nama="<?= htmlspecialchars($p['nama_pembimbing']); ?>"
@@ -211,12 +217,7 @@ $koneksi->close();
                             placeholder="08xxxxxxxxxx">
                     </div>
 
-                    <div class="mb-3">
-                        <label for="edit_password" class="form-label fw-semibold">Ganti Password <small
-                                class="text-muted fw-normal">(Opsional)</small></label>
-                        <input type="password" class="form-control" id="edit_password" name="password"
-                            placeholder="Kosongkan jika tidak ingin mengubah password">
-                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -231,7 +232,46 @@ $koneksi->close();
 </div>
 
 <!-- ========================================== -->
-<!-- 3. MODAL IMPORT PEMBIMBING (EXCEL)        -->
+<!-- 3. MODAL RESET PASSWORD PEMBIMBING        -->
+<!-- ========================================== -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
+                <h5 class="modal-title" id="resetPasswordModalLabel">
+                    <i class="fas fa-key me-2"></i> Reset Password Pembimbing
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reset_pw_id_pembimbing">
+                <div id="alertResetPassword" class="alert d-none"></div>
+
+                <p class="mb-2">Anda akan mereset password pembimbing berikut:</p>
+                <div class="p-3 bg-light rounded border mb-3">
+                    <strong class="fs-6" id="reset_pw_nama_pembimbing"></strong>
+                </div>
+                <div class="alert alert-info d-flex gap-2 align-items-start py-2 mb-0">
+                    <i class="fas fa-info-circle flex-shrink-0 mt-1"></i>
+                    <div class="small">
+                        Password akan dikembalikan ke nilai default: <strong class="text-primary">pklifsu</strong>.<br>
+                        Pembimbing dapat menggunakan password ini untuk login kembali.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-secondary text-white" id="btnConfirmResetPassword" style="background:#495057;">
+                    <span class="spinner-border spinner-border-sm me-1 d-none" id="spinnerResetPw"></span>
+                    <i class="fas fa-key me-1" id="iconResetPw"></i> Reset Password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 4. MODAL IMPORT PEMBIMBING (EXCEL)        -->
 <!-- ========================================== -->
 <div class="modal fade" id="importPembimbingModal" tabindex="-1" aria-labelledby="importPembimbingModalLabel"
     aria-hidden="true">
@@ -411,7 +451,6 @@ $koneksi->close();
             $('#edit_nama').val(nama);
             $('#edit_username').val(username);
             $('#edit_kontak').val(kontak);
-            $('#edit_password').val('');
             $('#alertEditPembimbing').addClass('d-none');
 
             $('#editPembimbingModal').modal('show');
@@ -463,7 +502,60 @@ $koneksi->close();
             });
         });
 
-        // 5. Trigger Modal Hapus
+        // 5. Trigger Modal Reset Password
+        $('#pembimbingTable').on('click', '.btn-reset-password', function () {
+            var id   = $(this).data('id');
+            var nama = $(this).data('nama');
+
+            $('#reset_pw_id_pembimbing').val(id);
+            $('#reset_pw_nama_pembimbing').text(nama);
+            $('#alertResetPassword').addClass('d-none').removeClass('alert-success alert-danger').html('');
+
+            $('#resetPasswordModal').modal('show');
+        });
+
+        // Eksekusi Reset Password
+        $('#btnConfirmResetPassword').on('click', function () {
+            var id      = $('#reset_pw_id_pembimbing').val();
+            var btn     = $(this);
+            var spinner = $('#spinnerResetPw');
+            var icon    = $('#iconResetPw');
+            var alertBox = $('#alertResetPassword');
+
+            btn.prop('disabled', true);
+            spinner.removeClass('d-none');
+            icon.addClass('d-none');
+            alertBox.addClass('d-none').removeClass('alert-success alert-danger');
+
+            $.ajax({
+                url: 'ajax/reset_password_pembimbing.php',
+                type: 'POST',
+                data: { id_pembimbing: id },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.status === 'success') {
+                        alertBox.addClass('alert-success').html('<i class="fas fa-check-circle me-1"></i> ' + res.message).removeClass('d-none');
+                        setTimeout(function () {
+                            $('#resetPasswordModal').modal('hide');
+                        }, 1500);
+                    } else {
+                        alertBox.addClass('alert-danger').html('<i class="fas fa-times-circle me-1"></i> ' + res.message).removeClass('d-none');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'Terjadi kesalahan pada server.';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    alertBox.addClass('alert-danger').html('<i class="fas fa-times-circle me-1"></i> ' + msg).removeClass('d-none');
+                },
+                complete: function () {
+                    btn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    icon.removeClass('d-none');
+                }
+            });
+        });
+
+        // 6. Trigger Modal Hapus
         $('#pembimbingTable').on('click', '.btn-hapus-pembimbing', function () {
             var id = $(this).data('id');
             var nama = $(this).data('nama');
