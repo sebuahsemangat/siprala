@@ -12,6 +12,7 @@ $query_siswa = "
         s.kelas, 
         s.kontak_siswa, 
         s.id_tempat,
+        s.nama_siswa AS nama_siswa_display,
         s.id_pembimbing,
         p.nama_pembimbing,
         tp.nama_tempat,
@@ -83,7 +84,7 @@ $koneksi->close();
                         <th style="width: 140px;">Kontak Siswa</th>
                         <th style="width: 180px;">Pembimbing</th>
                         <th style="width: 140px;">Penempatan PKL</th>
-                        <th style="width: 100px;" class="text-center">Aksi</th>
+                        <th style="width: 130px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -141,6 +142,14 @@ $koneksi->close();
                                         data-pembimbing="<?php echo $siswa['id_pembimbing']; ?>"
                                         title="Edit Siswa">
                                         <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info text-white btn-atur-penempatan"
+                                        data-id="<?php echo $siswa['id_siswa']; ?>"
+                                        data-nama="<?php echo htmlspecialchars($siswa['nama_siswa']); ?>"
+                                        data-id-pembimbing="<?php echo (int)$siswa['id_pembimbing']; ?>"
+                                        data-id-tempat="<?php echo (int)$siswa['id_tempat']; ?>"
+                                        title="Atur Penempatan PKL">
+                                        <i class="fas fa-map-marker-alt"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger delete-btn" data-id="<?php echo $siswa['id_siswa']; ?>" title="Hapus">
                                         <i class="fas fa-trash"></i>
@@ -281,6 +290,90 @@ $koneksi->close();
                 alert('Aksi Hapus Siswa ID: ' + id + ' (AJAX call to delete_siswa.php).');
                 // Implementasi AJAX call untuk penghapusan
             }
+        });
+
+        // ─── Event handler: Tombol Atur Penempatan PKL ───────────────────────
+        $('#siswaTable tbody').on('click', '.btn-atur-penempatan', function() {
+            var id        = $(this).data('id');
+            var nama      = $(this).data('nama');
+            var idPemb    = $(this).data('id-pembimbing') || 0;
+            var idTempat  = $(this).data('id-tempat') || 0;
+
+            // Set nilai form
+            $('#penempatan_id_siswa').val(id);
+            $('#penempatan_nama_siswa').text(nama);
+            $('#penempatan_id_pembimbing').val(idPemb);
+            $('#alertPenempatan').addClass('d-none').removeClass('alert-success alert-danger').html('');
+
+            // Reset & populate select tempat PKL
+            var $selectTempat = $('#penempatan_id_tempat');
+            $selectTempat.html('<option value="0">⏳ Memuat data...</option>').prop('disabled', true);
+
+            // Tampilkan modal dulu
+            $('#aturPenempatanModal').modal('show');
+
+            // Fetch daftar tempat PKL via AJAX
+            $.getJSON('get_tempat_pkl.php', function(data) {
+                $selectTempat.html('<option value="0">-- Belum Ditentukan --</option>');
+                $.each(data, function(i, tempat) {
+                    var label = tempat.nama_tempat;
+                    if (tempat.kota) label += ' – ' + tempat.kota;
+                    $selectTempat.append(
+                        $('<option>').val(tempat.id_tempat).text(label)
+                    );
+                });
+                $selectTempat.val(idTempat).prop('disabled', false);
+            }).fail(function() {
+                $selectTempat.html('<option value="0">⚠️ Gagal memuat data</option>').prop('disabled', false);
+            });
+        });
+
+        // Event handler: Submit form Atur Penempatan
+        $('#formAturPenempatan').on('submit', function(e) {
+            e.preventDefault();
+            var alertBox = $('#alertPenempatan');
+            var btn      = $('#btnSubmitPenempatan');
+            var spinner  = $('#spinnerPenempatan');
+            var icon     = $('#iconPenempatan');
+
+            btn.prop('disabled', true);
+            spinner.removeClass('d-none');
+            icon.addClass('d-none');
+            alertBox.addClass('d-none').removeClass('alert-success alert-danger');
+
+            $.ajax({
+                url: 'ajax/update_penempatan_siswa.php',
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === 'success') {
+                        alertBox.addClass('alert-success').html('<i class="fas fa-check-circle me-1"></i> ' + res.message).removeClass('d-none');
+                        setTimeout(function() {
+                            $('#aturPenempatanModal').modal('hide');
+                            alertBox.addClass('d-none');
+                            loadContent('data_siswa.php');
+                        }, 1200);
+                    } else {
+                        alertBox.addClass('alert-danger').html('<i class="fas fa-times-circle me-1"></i> ' + res.message).removeClass('d-none');
+                    }
+                },
+                error: function(xhr) {
+                    var msg = 'Terjadi kesalahan pada server.';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch(e) {}
+                    alertBox.addClass('alert-danger').html('<i class="fas fa-times-circle me-1"></i> ' + msg).removeClass('d-none');
+                },
+                complete: function() {
+                    btn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    icon.removeClass('d-none');
+                }
+            });
+        });
+
+        // Reset modal Atur Penempatan saat ditutup
+        $('#aturPenempatanModal').on('hidden.bs.modal', function() {
+            $('#alertPenempatan').addClass('d-none').html('');
         });
 
         // Event handler: preview nama file saat dipilih
@@ -484,6 +577,73 @@ $koneksi->close();
                     <button type="submit" class="btn btn-warning text-white" id="btnSubmitEditSiswa">
                         <span class="spinner-border spinner-border-sm me-1 d-none" id="spinnerEditSiswa"></span>
                         <i class="fas fa-save me-1" id="iconEditSiswa"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Atur Penempatan PKL -->
+<div class="modal fade" id="aturPenempatanModal" tabindex="-1" aria-labelledby="aturPenempatanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0dcaf0 0%, #0a9abf 100%);">
+                <h5 class="modal-title" id="aturPenempatanModalLabel">
+                    <i class="fas fa-map-marker-alt me-2"></i> Atur Penempatan PKL
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formAturPenempatan">
+                <div class="modal-body">
+                    <div id="alertPenempatan" class="alert d-none"></div>
+                    <input type="hidden" id="penempatan_id_siswa" name="id_siswa">
+
+                    <!-- Peringatan penggunaan -->
+                    <div class="alert alert-warning d-flex gap-2 align-items-start py-2 mb-3">
+                        <i class="fas fa-exclamation-triangle flex-shrink-0 mt-1"></i>
+                        <div class="small">
+                            <strong>Perhatian:</strong> Fitur ini hanya untuk koreksi manual. Penempatan PKL dan penunjukan pembimbing sebaiknya dilakukan melalui <strong>proses balasan surat</strong> atau menu <strong>Data Tempat PKL</strong>.
+                        </div>
+                    </div>
+
+                    <!-- Info siswa -->
+                    <div class="mb-4 p-3 rounded-3" style="background: #f0f9ff; border-left: 4px solid #0dcaf0;">
+                        <div class="text-muted small fw-semibold mb-1"><i class="fas fa-user-graduate me-1"></i> Siswa yang diatur:</div>
+                        <div class="fw-bold fs-6" id="penempatan_nama_siswa">-</div>
+                    </div>
+
+                    <!-- Pilih Pembimbing -->
+                    <div class="mb-3">
+                        <label for="penempatan_id_pembimbing" class="form-label fw-semibold">
+                            <i class="fas fa-chalkboard-teacher me-1 text-warning"></i> Guru Pembimbing
+                        </label>
+                        <select class="form-select" id="penempatan_id_pembimbing" name="id_pembimbing">
+                            <option value="0">-- Belum Ditentukan --</option>
+                            <?php foreach ($list_pembimbing as $pb): ?>
+                                <option value="<?php echo $pb['id_pembimbing']; ?>">
+                                    <?php echo htmlspecialchars($pb['nama_pembimbing']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Pilih Tempat PKL -->
+                    <div class="mb-3">
+                        <label for="penempatan_id_tempat" class="form-label fw-semibold">
+                            <i class="fas fa-building me-1 text-info"></i> Tempat PKL
+                        </label>
+                        <select class="form-select" id="penempatan_id_tempat" name="id_tempat">
+                            <option value="0">-- Belum Ditentukan --</option>
+                        </select>
+                        <div class="form-text">Pilih lokasi tempat siswa menjalani PKL.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-info text-white" id="btnSubmitPenempatan">
+                        <span class="spinner-border spinner-border-sm me-1 d-none" id="spinnerPenempatan"></span>
+                        <i class="fas fa-save me-1" id="iconPenempatan"></i> Simpan Penempatan
                     </button>
                 </div>
             </form>
