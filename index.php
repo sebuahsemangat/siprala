@@ -336,7 +336,7 @@ if (isset($_SESSION['login_error'])) {
                         </div>
                     </div>
 
-                    <!-- Card Informasi Siswa Terpilih -->
+                    <!-- Card Informasi Siswa Terpilih & Verifikasi NIS -->
                     <div id="detailSiswaCard"
                         class="card border border-2 border-primary-subtle bg-light p-3 d-none mb-3"
                         style="border-radius: 12px;">
@@ -351,17 +351,37 @@ if (isset($_SESSION['login_error'])) {
                         </div>
                         <div class="small">
                             <div class="row py-1 border-bottom">
-                                <div class="col-4 text-muted">NIS</div>
-                                <div class="col-8 fw-semibold text-dark" id="displayNis">-</div>
-                            </div>
-                            <div class="row py-1 border-bottom">
                                 <div class="col-4 text-muted">Nama</div>
                                 <div class="col-8 fw-semibold text-dark" id="displayNama">-</div>
                             </div>
-                            <div class="row py-1">
+                            <div class="row py-1 border-bottom">
                                 <div class="col-4 text-muted">Kelas</div>
                                 <div class="col-8 fw-semibold text-dark" id="displayKelas">-</div>
                             </div>
+                            <div class="row py-1 border-bottom d-none" id="rowDisplayNis">
+                                <div class="col-4 text-muted">NIS</div>
+                                <div class="col-8 fw-semibold text-success">
+                                    <i class="fas fa-check-circle me-1"></i><span id="displayNis">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Verifikasi NIS -->
+                        <div class="mt-3 pt-2 border-top" id="sectionVerifikasiNis">
+                            <label for="inputVerifikasiNis" class="form-label small fw-bold text-dark mb-1">
+                                <i class="fas fa-user-lock text-warning me-1"></i> Verifikasi Kepemilikan Akun
+                            </label>
+                            <div class="text-muted small mb-2" style="font-size: 12px;">
+                                Masukkan NIS Anda untuk memverifikasi bahwa ini memang akun milik Anda:
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="inputVerifikasiNis"
+                                    placeholder="Ketik NIS Anda..." autocomplete="off">
+                                <button class="btn btn-primary px-3" type="button" id="btnVerifikasiNis">
+                                    <i class="fas fa-check me-1"></i>Verifikasi NIS
+                                </button>
+                            </div>
+                            <div id="verifikasiFeedback" class="small mt-2 d-none"></div>
                         </div>
                     </div>
 
@@ -388,16 +408,20 @@ if (isset($_SESSION['login_error'])) {
         document.addEventListener('DOMContentLoaded', function () {
             const COOLDOWN_KEY = 'siprala_reset_pwd_cooldown';
             const COOLDOWN_DURATION_MS = 10 * 60 * 1000; // 10 menit
-            const WA_PHONE = '082214820486';
             const WA_PHONE_INTL = '6282214820486';
 
             const inputCariNama = document.getElementById('inputCariNama');
             const searchSpinner = document.getElementById('searchSpinner');
             const hasilPencarian = document.getElementById('hasilPencarian');
             const detailSiswaCard = document.getElementById('detailSiswaCard');
+            const rowDisplayNis = document.getElementById('rowDisplayNis');
             const displayNis = document.getElementById('displayNis');
             const displayNama = document.getElementById('displayNama');
             const displayKelas = document.getElementById('displayKelas');
+            const inputVerifikasiNis = document.getElementById('inputVerifikasiNis');
+            const btnVerifikasiNis = document.getElementById('btnVerifikasiNis');
+            const verifikasiFeedback = document.getElementById('verifikasiFeedback');
+            const sectionVerifikasiNis = document.getElementById('sectionVerifikasiNis');
             const btnBatalPilih = document.getElementById('btnBatalPilih');
             const btnKirimResetWa = document.getElementById('btnKirimResetWa');
             const cooldownAlert = document.getElementById('cooldownAlert');
@@ -405,6 +429,7 @@ if (isset($_SESSION['login_error'])) {
             const resetPasswordModal = document.getElementById('resetPasswordModal');
 
             let selectedSiswa = null;
+            let isNisVerified = false;
             let searchTimeout = null;
             let cooldownInterval = null;
 
@@ -450,7 +475,7 @@ if (isset($_SESSION['login_error'])) {
                     cooldownAlert.classList.add('d-none');
                     btnKirimResetWa.innerHTML = '<i class="fab fa-whatsapp me-2 fs-5 align-middle"></i>Request Reset Password';
 
-                    if (selectedSiswa) {
+                    if (selectedSiswa && isNisVerified) {
                         btnKirimResetWa.disabled = false;
                     } else {
                         btnKirimResetWa.disabled = true;
@@ -504,7 +529,7 @@ if (isset($_SESSION['login_error'])) {
                                     a.className = 'list-group-item list-group-item-action py-2';
                                     a.innerHTML = `
                                         <div class="fw-semibold text-dark">${escapeHtml(siswa.nama_siswa)}</div>
-                                        <div class="small text-muted">NIS: <span class="text-primary">${escapeHtml(siswa.nis)}</span> &bull; Kelas: ${escapeHtml(siswa.kelas)}</div>
+                                        <div class="small text-muted"><i class="fas fa-graduation-cap me-1"></i> Kelas: ${escapeHtml(siswa.kelas)}</div>
                                     `;
                                     a.addEventListener('click', function () {
                                         pilihSiswa(siswa);
@@ -537,22 +562,100 @@ if (isset($_SESSION['login_error'])) {
             // Pilih siswa dari hasil pencarian
             function pilihSiswa(siswa) {
                 selectedSiswa = siswa;
-                displayNis.textContent = siswa.nis;
+                isNisVerified = false;
+
                 displayNama.textContent = siswa.nama_siswa;
                 displayKelas.textContent = siswa.kelas;
+
+                // Reset verifikasi NIS
+                inputVerifikasiNis.value = '';
+                inputVerifikasiNis.disabled = false;
+                btnVerifikasiNis.disabled = false;
+                verifikasiFeedback.className = 'small mt-2 d-none';
+                verifikasiFeedback.innerHTML = '';
+                rowDisplayNis.classList.add('d-none');
 
                 detailSiswaCard.classList.remove('d-none');
                 hasilPencarian.classList.add('d-none');
                 inputCariNama.value = siswa.nama_siswa;
+                btnKirimResetWa.disabled = true;
 
-                if (!updateCooldownUI()) {
-                    btnKirimResetWa.disabled = false;
-                }
+                // Arahkan fokus ke input verifikasi NIS
+                setTimeout(() => {
+                    inputVerifikasiNis.focus();
+                }, 200);
             }
+
+            // Fungsi verifikasi NIS ke server
+            function prosesVerifikasiNis() {
+                if (!selectedSiswa) return;
+                const nisVal = inputVerifikasiNis.value.trim();
+
+                if (!nisVal) {
+                    verifikasiFeedback.className = 'small mt-2 text-danger';
+                    verifikasiFeedback.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> Silakan masukkan NIS Anda.';
+                    inputVerifikasiNis.focus();
+                    return;
+                }
+
+                btnVerifikasiNis.disabled = true;
+                btnVerifikasiNis.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Cek...';
+
+                fetch('ajax_cari_siswa.php?action=verify&id_siswa=' + encodeURIComponent(selectedSiswa.id_siswa) + '&nis=' + encodeURIComponent(nisVal))
+                    .then(res => res.json())
+                    .then(res => {
+                        btnVerifikasiNis.disabled = false;
+                        btnVerifikasiNis.innerHTML = '<i class="fas fa-check me-1"></i>Verifikasi NIS';
+
+                        if (res.status === 'success' && res.data) {
+                            isNisVerified = true;
+                            selectedSiswa.nis = res.data.nis;
+
+                            // Tampilkan feedback sukses
+                            verifikasiFeedback.className = 'alert alert-success py-1 px-2 small mt-2 mb-0 d-flex align-items-center';
+                            verifikasiFeedback.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i><strong>NIS Cocok!</strong> Identitas Anda terverifikasi.';
+
+                            // Tampilkan NIS pada tabel ringkasan
+                            displayNis.textContent = res.data.nis;
+                            rowDisplayNis.classList.remove('d-none');
+
+                            // Kunci input NIS
+                            inputVerifikasiNis.disabled = true;
+                            btnVerifikasiNis.disabled = true;
+
+                            // Aktifkan tombol Request WhatsApp jika tidak sedang cooldown
+                            if (!updateCooldownUI()) {
+                                btnKirimResetWa.disabled = false;
+                            }
+                        } else {
+                            isNisVerified = false;
+                            btnKirimResetWa.disabled = true;
+                            verifikasiFeedback.className = 'alert alert-danger py-1 px-2 small mt-2 mb-0 d-flex align-items-center';
+                            verifikasiFeedback.innerHTML = '<i class="fas fa-times-circle text-danger me-2"></i>' + escapeHtml(res.message || 'NIS tidak cocok.');
+                            inputVerifikasiNis.focus();
+                        }
+                    })
+                    .catch(err => {
+                        btnVerifikasiNis.disabled = false;
+                        btnVerifikasiNis.innerHTML = '<i class="fas fa-check me-1"></i>Verifikasi NIS';
+                        verifikasiFeedback.className = 'small mt-2 text-danger';
+                        verifikasiFeedback.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Gagal menghubungi server.';
+                    });
+            }
+
+            // Event tombol & enter pada verifikasi NIS
+            btnVerifikasiNis.addEventListener('click', prosesVerifikasiNis);
+            inputVerifikasiNis.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    prosesVerifikasiNis();
+                }
+            });
 
             // Batal pilih siswa
             btnBatalPilih.addEventListener('click', function () {
                 selectedSiswa = null;
+                isNisVerified = false;
                 detailSiswaCard.classList.add('d-none');
                 inputCariNama.value = '';
                 btnKirimResetWa.disabled = true;
@@ -573,11 +676,11 @@ if (isset($_SESSION['login_error'])) {
                     return;
                 }
 
-                if (!selectedSiswa) {
+                if (!selectedSiswa || !isNisVerified) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Pilih Siswa',
-                        text: 'Silakan cari dan pilih data siswa terlebih dahulu.',
+                        title: 'Verifikasi Diperlukan',
+                        text: 'Silakan pilih siswa dan verifikasi NIS Anda terlebih dahulu.',
                         confirmButtonColor: '#667eea'
                     });
                     return;
@@ -588,7 +691,7 @@ if (isset($_SESSION['login_error'])) {
                     title: 'Konfirmasi Data',
                     html: `
                         <div class="text-start">
-                            <p class="mb-2 text-muted">Apakah data yang Anda pilih sudah benar?</p>
+                            <p class="mb-2 text-muted">Apakah data yang Anda verifikasi sudah benar?</p>
                             <div class="p-3 bg-light rounded border small">
                                 <div class="mb-1"><strong>NIS:</strong> ${escapeHtml(selectedSiswa.nis)}</div>
                                 <div class="mb-1"><strong>Nama:</strong> ${escapeHtml(selectedSiswa.nama_siswa)}</div>
@@ -604,7 +707,7 @@ if (isset($_SESSION['login_error'])) {
                     cancelButtonText: 'Batal'
                 }).then(result => {
                     if (result.isConfirmed) {
-                        // Susun pesan WhatsApp sesuai permintaan
+                        // Susun pesan WhatsApp sesuai template
                         const pesanWa = `Permintaan Reset Password Absensi PKL.\nNIS: ${selectedSiswa.nis}\nNama: ${selectedSiswa.nama_siswa}\nKelas: ${selectedSiswa.kelas}`;
                         const urlWa = `https://wa.me/${WA_PHONE_INTL}?text=${encodeURIComponent(pesanWa)}`;
 
