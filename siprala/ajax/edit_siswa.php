@@ -15,8 +15,6 @@ $nis = trim($_POST['nis'] ?? '');
 $nama_siswa = trim($_POST['nama_siswa'] ?? '');
 $kelas = trim($_POST['kelas'] ?? '');
 $kontak = trim($_POST['kontak_siswa'] ?? '');
-$id_pembimbing = intval($_POST['id_pembimbing'] ?? 0);
-$password_baru = trim($_POST['password'] ?? '');
 
 if ($id_siswa <= 0 || empty($nis) || empty($nama_siswa) || empty($kelas)) {
     http_response_code(400);
@@ -53,33 +51,18 @@ if ($res_check->num_rows > 0) {
 }
 $stmt_check->close();
 
-// 3. Update query (apakah ganti password atau tidak)
-if (!empty($password_baru)) {
-    $password_hashed = password_hash($password_baru, PASSWORD_DEFAULT);
-    $stmt = $koneksi->prepare("
-        UPDATE siswa 
-        SET nis = ?, nama_siswa = ?, kelas = ?, kontak_siswa = ?, id_pembimbing = ?, password = ?
-        WHERE id_siswa = ?
-    ");
-    if (!$stmt) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Gagal menyiapkan query: ' . $koneksi->error]);
-        exit;
-    }
-    $stmt->bind_param("ssssisi", $nis, $nama_siswa, $kelas, $clean_kontak, $id_pembimbing, $password_hashed, $id_siswa);
-} else {
-    $stmt = $koneksi->prepare("
-        UPDATE siswa 
-        SET nis = ?, nama_siswa = ?, kelas = ?, kontak_siswa = ?, id_pembimbing = ?
-        WHERE id_siswa = ?
-    ");
-    if (!$stmt) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Gagal menyiapkan query: ' . $koneksi->error]);
-        exit;
-    }
-    $stmt->bind_param("ssssii", $nis, $nama_siswa, $kelas, $clean_kontak, $id_pembimbing, $id_siswa);
+// 3. Update data siswa
+$stmt = $koneksi->prepare("
+    UPDATE siswa 
+    SET nis = ?, nama_siswa = ?, kelas = ?, kontak_siswa = ?
+    WHERE id_siswa = ?
+");
+if (!$stmt) {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Gagal menyiapkan query: ' . $koneksi->error]);
+    exit;
 }
+$stmt->bind_param("ssssi", $nis, $nama_siswa, $kelas, $clean_kontak, $id_siswa);
 
 if ($stmt->execute()) {
     echo json_encode([
