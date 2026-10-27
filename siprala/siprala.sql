@@ -147,7 +147,7 @@ CREATE TABLE `siswa_surat` (
   `id_surat_siswa` int NOT NULL,
   `id_siswa` int NOT NULL,
   `id_surat` int NOT NULL,
-  `status` enum('pending','diterima','ditolak','') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `status` enum('pending','diterima','ditolak','dibatalkan','') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
   `catatan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

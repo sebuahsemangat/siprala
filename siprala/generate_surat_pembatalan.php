@@ -133,7 +133,7 @@ try {
     }
 
     // 2. Simpan detail siswa ke siswa_surat (untuk riwayat surat pembatalan)
-    $stmt_ss = $koneksi->prepare("INSERT INTO siswa_surat (id_siswa, id_surat) VALUES (?, ?)");
+    $stmt_ss = $koneksi->prepare("INSERT INTO siswa_surat (id_siswa, id_surat, status) VALUES (?, ?, 'dibatalkan')");
     if (!$stmt_ss) {
         throw new Exception("Gagal mempersiapkan query siswa surat: " . $koneksi->error);
     }
