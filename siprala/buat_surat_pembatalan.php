@@ -61,7 +61,30 @@ if ($result_last_number && $result_last_number->num_rows > 0) {
     $row = $result_last_number->fetch_assoc();
     $nomor_urut_terakhir = $row['nomor_urut_tertinggi'];
 }
-$nomor_surat_baru = sprintf('%03d', $nomor_urut_terakhir + 1) . $format_nomor_surat;
+$nomor_urut_baru = $nomor_urut_terakhir + 1;
+
+// Bulan Romawi
+$bulan_angka = date('n');
+
+$romawi = [
+    1 => 'I',
+    2 => 'II',
+    3 => 'III',
+    4 => 'IV',
+    5 => 'V',
+    6 => 'VI',
+    7 => 'VII',
+    8 => 'VIII',
+    9 => 'IX',
+    10 => 'X',
+    11 => 'XI',
+    12 => 'XII'
+];
+
+$bulan_romawi = $romawi[$bulan_angka];
+
+// Format: 001/PAN-PKL/SMK-IF/YPS/X/2025
+$nomor_surat_baru = sprintf('%03d', $nomor_urut_baru) . $format_nomor_surat . $bulan_romawi . "/" . date('Y');
 $tanggal_hari_ini = date('Y-m-d');
 $koneksi->close();
 ?>
